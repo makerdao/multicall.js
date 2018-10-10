@@ -1,0 +1,29 @@
+{
+  "presets": {
+    "kovan": {
+      "rpcNode": "https://kovan.infura.io",
+      "multicallContractAddress": "0xb5254b1ee6d966d88d24855f0c145ccfc5e5f6fd",
+      "helperContractAddress": "0x5b630ba8fe98ebed5381c868cd6b8d23875b6ca7"
+    },
+    "mainnet": {
+      "rpcNode": "https://mainnet.infura.io",
+      "multicallContractAddress": "",
+      "helperContractAddress": ""
+    }
+  },
+  "multicallContractAbi": [{
+    "constant": true,
+    "inputs": [{
+      "name": "data",
+      "type": "bytes"
+    }],
+    "name": "aggregate",
+    "outputs": [{
+      "name": "",
+      "type": "bytes"
+    }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  }]
+}

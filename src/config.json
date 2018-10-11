@@ -7,23 +7,29 @@
     },
     "mainnet": {
       "rpcNode": "https://mainnet.infura.io",
-      "multicallContractAddress": "",
+      "multicallContractAddress": "0x26305b94e99148570b261819a60731c9540a4285",
       "helperContractAddress": ""
     }
   },
-  "multicallContractAbi": [{
-    "constant": true,
-    "inputs": [{
-      "name": "data",
-      "type": "bytes"
-    }],
-    "name": "aggregate",
-    "outputs": [{
-      "name": "",
-      "type": "bytes"
-    }],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  }]
+  "multicallContractAbi": [
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "aggregate",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
 }

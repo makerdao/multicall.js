@@ -1,6 +1,6 @@
 import Web3 from 'web3';
 import flatten from 'lodash.flatten';
-import { strip0x, typesLength } from './helpers.js';
+import { strip0x, typesLength, parseUnit } from './helpers.js';
 import config from './config.json';
 
 const { padLeft, numberToHex } = Web3.utils;
@@ -56,13 +56,18 @@ export default class MultiCall {
       'uint256',
       result.slice(0, 66)
     );
+    const typeArray = flatten(calls.map(ele => ele.returns)).map(ele => ele[1]);
+    const retNameArray = flatten(calls.map(ele => ele.returns)).map(
+      ele => ele[0]
+    );
+    const units = flatten(calls.map(ele => ele.returns)).map(ele => ele[2]);
     const parsedVals = this.web3.eth.abi.decodeParameters(
-      flatten(calls.map(ele => ele.returns)).map(ele => ele[1]),
+      typeArray,
       '0x' + result.slice(67)
     );
     const retObj = { blockNumber };
-    for (let i = 0; i < calls.length; i++) {
-      retObj[calls[i].returns[0][0]] = parsedVals[i];
+    for (let i = 0; i < retNameArray.length; i++) {
+      retObj[retNameArray[i]] = parseUnit(units[i], parsedVals[i]);
     }
     return retObj;
   }

@@ -71,132 +71,132 @@ async function getSaiParams(addresses) {
     {
       to: HELPER_CONTRACT,
       method: `ethBalanceOf(address)`,
-      returns: [['eth.myBalance', 'uint256']]
+      returns: [['eth.myBalance', 'uint256', 'WAD']]
     },
     // pip and pep
     {
       to: addresses.pip,
       method: `read()`,
-      returns: [['pip.val', 'uint256']]
+      returns: [['pip.val', 'uint256', 'WAD']]
     },
     {
       to: addresses.pep,
-      method: `read()`,
-      returns: [['pep.val', 'uint256']]
+      method: `peek()`,
+      returns: [['pep.val', 'uint256', 'WAD']]
     },
     // gem token
     {
       to: addresses.gem,
       method: `totalSupply()`,
-      returns: [['gem.totalSupply', 'uint256']]
+      returns: [['gem.totalSupply', 'uint256', 'WAD']]
     },
     {
       to: addresses.gem,
       method: `balanceOf(address)`,
       args: [[MY_ADDRESS, 'address']],
-      returns: [['gem.myBalance', 'uint256']]
+      returns: [['gem.myBalance', 'uint256', 'WAD']]
     },
     {
       to: addresses.gem,
       method: `balanceOf(address)`,
       args: [[addresses.tub, 'address']],
-      returns: [['gem.tubBalance', 'uint256']]
+      returns: [['gem.tubBalance', 'uint256', 'WAD']]
     },
     {
       to: addresses.gem,
       method: `balanceOf(address)`,
       args: [[addresses.tap, 'address']],
-      returns: [['gem.tapBalance', 'uint256']]
+      returns: [['gem.tapBalance', 'uint256', 'WAD']]
     },
     // gov token
     {
       to: addresses.gov,
       method: `totalSupply()`,
-      returns: [['gov.totalSupply', 'uint256']]
+      returns: [['gov.totalSupply', 'uint256', 'WAD']]
     },
     {
       to: addresses.gov,
       method: `balanceOf(address)`,
       args: [[MY_ADDRESS, 'address']],
-      returns: [['gov.myBalance', 'uint256']]
+      returns: [['gov.myBalance', 'uint256', 'WAD']]
     },
     {
       to: addresses.gov,
       method: `balanceOf(address)`,
       args: [[addresses.pit, 'address']],
-      returns: [['gov.pitBalance', 'uint256']]
+      returns: [['gov.pitBalance', 'uint256', 'WAD']]
     },
     {
       to: addresses.gov,
       method: `allowance(address,address)`,
       args: [[MY_ADDRESS, 'address'], [addresses.proxy, 'address']],
-      returns: [['gov.allowance', 'uint256']]
+      returns: [['gov.allowance', 'uint256', 'WAD']]
     },
     // skr token
     {
       to: addresses.skr,
       method: `totalSupply()`,
-      returns: [['skr.totalSupply', 'uint256']]
+      returns: [['skr.totalSupply', 'uint256', 'WAD']]
     },
     {
       to: addresses.skr,
       method: `balanceOf(address)`,
       args: [[MY_ADDRESS, 'address']],
-      returns: [['skr.myBalance', 'uint256']]
+      returns: [['skr.myBalance', 'uint256', 'WAD']]
     },
     {
       to: addresses.skr,
       method: `balanceOf(address)`,
       args: [[addresses.tub, 'address']],
-      returns: [['skr.tubBalance', 'uint256']]
+      returns: [['skr.tubBalance', 'uint256', 'WAD']]
     },
     {
       to: addresses.skr,
       method: `balanceOf(address)`,
       args: [[addresses.tap, 'address']],
-      returns: [['skr.tapBalance', 'uint256']]
+      returns: [['skr.tapBalance', 'uint256', 'WAD']]
     },
     // dai token
     {
       to: addresses.sai,
       method: `totalSupply()`,
-      returns: [['dai.totalSupply', 'uint256']]
+      returns: [['dai.totalSupply', 'uint256', 'WAD']]
     },
     {
       to: addresses.sai,
       method: `balanceOf(address)`,
       args: [[MY_ADDRESS, 'address']],
-      returns: [['dai.myBalance', 'uint256']]
+      returns: [['dai.myBalance', 'uint256', 'WAD']]
     },
     {
       to: addresses.sai,
       method: `balanceOf(address)`,
       args: [[addresses.tap, 'address']],
-      returns: [['dai.tapBalance', 'uint256']]
+      returns: [['dai.tapBalance', 'uint256', 'WAD']]
     },
     {
       to: addresses.sai,
       method: `allowance(address,address)`,
       args: [[MY_ADDRESS, 'address'], [addresses.proxy, 'address']],
-      returns: [['dai.allowance', 'uint256']]
+      returns: [['dai.allowance', 'uint256', 'WAD']]
     },
     // sin token
     {
       to: addresses.sin,
       method: `totalSupply()`,
-      returns: [['sin.totalSupply', 'uint256']]
+      returns: [['sin.totalSupply', 'uint256', 'WAD']]
     },
     {
       to: addresses.sin,
       method: `balanceOf(address)`,
       args: [[addresses.tub, 'address']],
-      returns: [['sin.tubBalance', 'uint256']]
+      returns: [['sin.tubBalance', 'uint256', 'WAD']]
     },
     {
       to: addresses.sin,
       method: `balanceOf(address)`,
       args: [[addresses.tap, 'address']],
-      returns: [['sin.tapBalance', 'uint256']]
+      returns: [['sin.tapBalance', 'uint256', 'WAD']]
     }
   );
   const results = await multicall.multicall(options);

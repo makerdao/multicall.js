@@ -48,8 +48,7 @@ export default class MultiCall {
     return keepAsArray ? components : '0x' + components.join('');
   }
 
-  async multicall(options) {
-    const { calls } = options;
+  async aggregate(calls) {
     const calldata = this.makeMulticallData(calls, false, this.web3.eth);
     const result = await this.contract.methods.aggregate(calldata).call();
     const blockNumber = this.web3.eth.abi.decodeParameter(

@@ -17,24 +17,22 @@ Currently supported data types are: booleans, integers, addresses, fixed-size by
 ```
 const multicall = new MultiCall('kovan');
 
-const { blockNumber, mkrBalance, priceFeed } = await multicall.multicall({
-    calls: [
-        // MKR balance of some address
-        {
-            to: '0xAaF64BFCC32d0F15873a02163e7E500671a4ffcD',
-            method: 'balanceOf(address)',
-            args:  [['0x72776bb917751225d24c07d0663b3780b2ada67c', 'address']],
-            returns: [['mkrBalance', 'uint256']]
-        },
-        // address of Maker's ETH:USD price feed
-        {
-            to: '0xa71937147b55Deb8a530C7229C442Fd3F31b7db2',
-            method: 'pip()',
-            returns: [['priceFeed', 'address']]
-        },
-        // ... etc, many more value reads possible w/ this single requiest
-    ] // all these calls happen w/ one call to the node
-})
+const { blockNumber, mkrBalance, priceFeed } = await multicall.aggregate([
+    // MKR balance of some address
+    {
+        to: '0xAaF64BFCC32d0F15873a02163e7E500671a4ffcD',
+        method: 'balanceOf(address)',
+        args:  [['0x72776bb917751225d24c07d0663b3780b2ada67c', 'address']],
+        returns: [['mkrBalance', 'uint256']]
+    },
+    // address of Maker's ETH:USD price feed
+    {
+        to: '0xa71937147b55Deb8a530C7229C442Fd3F31b7db2',
+        method: 'pip()',
+        returns: [['priceFeed', 'address']]
+    },
+    // ... etc, many more value reads possible w/ this request
+]) // all these calls happen w/ a single call to a node
 ```
 
 ## Examples

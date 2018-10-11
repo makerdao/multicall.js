@@ -198,7 +198,7 @@ async function getSaiParams(addresses) {
       returns: [['sin.tapBalance', 'uint256', 'WAD']]
     }
   );
-  const results = await multicall.multicall(options);
+  const results = await multicall.aggregate(options.calls);
   return results;
 }
 
@@ -230,7 +230,7 @@ async function getContractAddresses() {
     args: [[MY_ADDRESS, 'address']],
     returns: [['proxy', 'address']]
   });
-  const results = await multicall.multicall(options);
+  const results = await multicall.aggregate(options.calls);
   return results;
 }
 

@@ -8,25 +8,28 @@ Currently supported data types are: booleans, integers, addresses, fixed-size by
 
 ## Summary
 
-* Get the return value from different smart contract function calls in a single call
-* Assurance that all values are from the same block number / block height
-* Compare the returned block number against the previous call's block number to know if it's possible for any returned values to be different
+- Get the return value from different smart contract function calls in a single call
+- Assurance that all values are from the same block number / block height
+- Compare the returned block number against the previous call's block number to know if it's possible for any returned values to be different
 
 ## Examples
 
 First use `npm` or `yarn` to install the dependencies:
+
 ```
 yarn install
 ```
 
 Then run an example from the `examples` folder:
+
 ```
-node_modules/.bin/babel-node examples/cdp-portal-example.js
+yarn examples
 ```
 
 ## Test
 
 To run tests use:
+
 ```
-npm run test
+yarn test
 ```

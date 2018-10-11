@@ -23,11 +23,13 @@
   "scripts": {
     "build:frontend": "./scripts/build-frontend.sh",
     "lint": "eslint src test",
+    "examples": "node_modules/.bin/babel-node examples/cdp-portal-example.js",
     "test": "jest --runInBand --config ./test/jest-config.json",
     "test:watch": "jest --watch --runInBand --config ./test/jest-config.json",
     "test2:watch": "jest --watch"
   },
   "dependencies": {
+    "lodash.flatten": "^4.4.0",
     "web3": "1.0.0-beta.36"
   },
   "devDependencies": {

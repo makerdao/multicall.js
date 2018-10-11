@@ -39,7 +39,7 @@ async function getSaiParams(addresses) {
       'tag', // Abstracted collateral price (ref per skr)
       'per', // Wrapper ratio (gem per skr)
       'off', // Cage flag
-      'out'  // Post cage exit
+      'out' // Post cage exit
     ],
     vox: [
       'par', // Dai Target Price (ref per dai)
@@ -48,18 +48,20 @@ async function getSaiParams(addresses) {
     ],
     tap: [
       'fix', // Cage price
-      'gap'  // Boom-Bust Spread
+      'gap' // Boom-Bust Spread
     ]
-  }
+  };
   const options = {
     calls: Object.keys(getParams).reduce((acc, k) => {
-      acc.push(...getParams[k].map(f => {
-        return {
-          to: addresses[k],
-          method: `${f}()`,
-          returns: [[f, 'uint256']]
-        }
-      }));
+      acc.push(
+        ...getParams[k].map(f => {
+          return {
+            to: addresses[k],
+            method: `${f}()`,
+            returns: [[f, 'uint256']]
+          };
+        })
+      );
       return acc;
     }, [])
   };
@@ -76,7 +78,8 @@ async function getSaiParams(addresses) {
       to: addresses.pip,
       method: `read()`,
       returns: [['pip.val', 'uint256']]
-    }, {
+    },
+    {
       to: addresses.pep,
       method: `read()`,
       returns: [['pep.val', 'uint256']]
@@ -86,17 +89,20 @@ async function getSaiParams(addresses) {
       to: addresses.gem,
       method: `totalSupply()`,
       returns: [['gem.totalSupply', 'uint256']]
-    }, {
+    },
+    {
       to: addresses.gem,
       method: `balanceOf(address)`,
       args: [[MY_ADDRESS, 'address']],
       returns: [['gem.myBalance', 'uint256']]
-    }, {
+    },
+    {
       to: addresses.gem,
       method: `balanceOf(address)`,
       args: [[addresses.tub, 'address']],
       returns: [['gem.tubBalance', 'uint256']]
-    }, {
+    },
+    {
       to: addresses.gem,
       method: `balanceOf(address)`,
       args: [[addresses.tap, 'address']],
@@ -107,17 +113,20 @@ async function getSaiParams(addresses) {
       to: addresses.gov,
       method: `totalSupply()`,
       returns: [['gov.totalSupply', 'uint256']]
-    }, {
+    },
+    {
       to: addresses.gov,
       method: `balanceOf(address)`,
       args: [[MY_ADDRESS, 'address']],
       returns: [['gov.myBalance', 'uint256']]
-    }, {
+    },
+    {
       to: addresses.gov,
       method: `balanceOf(address)`,
       args: [[addresses.pit, 'address']],
       returns: [['gov.pitBalance', 'uint256']]
-    }, {
+    },
+    {
       to: addresses.gov,
       method: `allowance(address,address)`,
       args: [[MY_ADDRESS, 'address'], [addresses.proxy, 'address']],
@@ -128,17 +137,20 @@ async function getSaiParams(addresses) {
       to: addresses.skr,
       method: `totalSupply()`,
       returns: [['skr.totalSupply', 'uint256']]
-    }, {
+    },
+    {
       to: addresses.skr,
       method: `balanceOf(address)`,
       args: [[MY_ADDRESS, 'address']],
       returns: [['skr.myBalance', 'uint256']]
-    }, {
+    },
+    {
       to: addresses.skr,
       method: `balanceOf(address)`,
       args: [[addresses.tub, 'address']],
       returns: [['skr.tubBalance', 'uint256']]
-    }, {
+    },
+    {
       to: addresses.skr,
       method: `balanceOf(address)`,
       args: [[addresses.tap, 'address']],
@@ -149,17 +161,20 @@ async function getSaiParams(addresses) {
       to: addresses.sai,
       method: `totalSupply()`,
       returns: [['dai.totalSupply', 'uint256']]
-    }, {
+    },
+    {
       to: addresses.sai,
       method: `balanceOf(address)`,
       args: [[MY_ADDRESS, 'address']],
       returns: [['dai.myBalance', 'uint256']]
-    }, {
+    },
+    {
       to: addresses.sai,
       method: `balanceOf(address)`,
       args: [[addresses.tap, 'address']],
       returns: [['dai.tapBalance', 'uint256']]
-    }, {
+    },
+    {
       to: addresses.sai,
       method: `allowance(address,address)`,
       args: [[MY_ADDRESS, 'address'], [addresses.proxy, 'address']],
@@ -170,12 +185,14 @@ async function getSaiParams(addresses) {
       to: addresses.sin,
       method: `totalSupply()`,
       returns: [['sin.totalSupply', 'uint256']]
-    }, {
+    },
+    {
       to: addresses.sin,
       method: `balanceOf(address)`,
       args: [[addresses.tub, 'address']],
       returns: [['sin.tubBalance', 'uint256']]
-    }, {
+    },
+    {
       to: addresses.sin,
       method: `balanceOf(address)`,
       args: [[addresses.tap, 'address']],
@@ -187,17 +204,28 @@ async function getSaiParams(addresses) {
 }
 
 async function getContractAddresses() {
-  const getContractAddressesFromTub = ['tap', 'vox', 'pit', 'pip', 'pep', 'gem', 'gov', 'skr', 'sai', 'sin'];
+  const getContractAddressesFromTub = [
+    'tap',
+    'vox',
+    'pit',
+    'pip',
+    'pep',
+    'gem',
+    'gov',
+    'skr',
+    'sai',
+    'sin'
+  ];
   const options = {
     calls: getContractAddressesFromTub.map(f => {
       return {
         to: SAI_TUB,
         method: `${f}()`,
         returns: [[f, 'address']]
-      }
+      };
     })
   };
-  options.calls.push ({
+  options.calls.push({
     to: PROXY_REGISTRY,
     method: `proxies(address)`,
     args: [[MY_ADDRESS, 'address']],

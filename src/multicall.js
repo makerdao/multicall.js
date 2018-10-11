@@ -1,4 +1,5 @@
 import Web3 from 'web3';
+import flatten from 'lodash.flatten';
 import { strip0x, typesLength } from './helpers.js';
 import config from './config.json';
 
@@ -6,12 +7,18 @@ const { padLeft, numberToHex } = Web3.utils;
 
 export default class MultiCall {
   constructor(preset) {
-    this.config = {}
+    this.config = {};
     Object.assign(this.config, config.presets[preset]);
     this.config.multicallContractAbi = [];
-    Object.assign(this.config.multicallContractAbi, config.multicallContractAbi);
+    Object.assign(
+      this.config.multicallContractAbi,
+      config.multicallContractAbi
+    );
     this.web3 = new Web3(this.config.rpcNode);
-    this.contract = new this.web3.eth.Contract(this.config.multicallContractAbi, this.config.multicallContractAddress);
+    this.contract = new this.web3.eth.Contract(
+      this.config.multicallContractAbi,
+      this.config.multicallContractAddress
+    );
   }
 
   makeMulticallData(calls, keepAsArray) {
@@ -27,7 +34,10 @@ export default class MultiCall {
           padLeft('40', 64),
           padLeft(numberToHex(args.length * 32 + 4), 64),
           this.web3.eth.abi.encodeFunctionSignature(method),
-          this.web3.eth.abi.encodeParameters(args.map(a => a[1]), args.map(a => a[0]))
+          this.web3.eth.abi.encodeParameters(
+            args.map(a => a[1]),
+            args.map(a => a[0])
+          )
         ]
           .map(v => (v ? strip0x(v) : null))
           .filter(v => v)
@@ -47,7 +57,7 @@ export default class MultiCall {
       result.slice(0, 66)
     );
     const parsedVals = this.web3.eth.abi.decodeParameters(
-      calls.map(ele => ele.returns[0][1]),
+      flatten(calls.map(ele => ele.returns)).map(ele => ele[1]),
       '0x' + result.slice(67)
     );
     const retObj = { blockNumber };

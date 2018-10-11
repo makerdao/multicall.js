@@ -2,13 +2,13 @@
   "presets": {
     "kovan": {
       "rpcNode": "https://kovan.infura.io",
-      "multicallContractAddress": "0xb5254b1ee6d966d88d24855f0c145ccfc5e5f6fd",
+      "multicallContractAddress": "0xb2155b4f516a2e93fd0c40fdba57a3ab39952236",
       "helperContractAddress": "0x5b630ba8fe98ebed5381c868cd6b8d23875b6ca7"
     },
     "mainnet": {
       "rpcNode": "https://mainnet.infura.io",
-      "multicallContractAddress": "0x26305b94e99148570b261819a60731c9540a4285",
-      "helperContractAddress": ""
+      "multicallContractAddress": "0x4844f6ce55baf02362c7dcac26fd9dd968a2071b",
+      "helperContractAddress": "0xfd536f5bc03ed27a240b3f80da898c9e4c33e7b1"
     }
   },
   "multicallContractAbi": [

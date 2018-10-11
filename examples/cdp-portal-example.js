@@ -5,8 +5,8 @@ const multicall = new MultiCall('kovan');
 // const SAI_TOP = '0x9b0ccf7c8994e19f39b2b4cf708e0a7df65fa8a3';
 // const SAI_TUB = '0x448a5065aebb8e423f0896e6c5d525c040f59af3';
 // const PROXY_REGISTRY = '0x4678f0a6958e4d2bc4f1baf7bc52e8f3564f3fe4';
-// const HELPER_CONTRACT = '';
-// const MY_ADDRESS = '';
+// const HELPER_CONTRACT = '0xfd536f5bc03ed27a240b3f80da898c9e4c33e7b1';
+// const MY_ADDRESS = '0x50104b8859824ef71413d2f9d84eea99c199cd12';
 
 // Kovan
 const SAI_TOP = '0x5f00393547561da3030ebf30e52f5dc0d5d3362c';
@@ -65,7 +65,6 @@ async function getSaiParams(addresses) {
       return acc;
     }, [])
   };
-
   options.calls.push(
     // eth balance
     {
@@ -76,13 +75,13 @@ async function getSaiParams(addresses) {
     // pip and pep
     {
       to: addresses.pip,
-      method: `read()`,
-      returns: [['pip.val', 'uint256', 'WAD']]
+      method: `peek()`,
+      returns: [['pip.val', 'uint256', 'WAD'], ['pip.has', 'bool']]
     },
     {
       to: addresses.pep,
       method: `peek()`,
-      returns: [['pep.val', 'uint256', 'WAD']]
+      returns: [['pep.val', 'uint256', 'WAD'], ['pep.has', 'bool']]
     },
     // gem token
     {

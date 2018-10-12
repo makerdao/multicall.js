@@ -29,6 +29,7 @@
     "test2:watch": "jest --watch"
   },
   "dependencies": {
+    "isomorphic-fetch": "^2.2.1",
     "lodash.flatten": "^4.4.0",
     "web3": "1.0.0-beta.36"
   },

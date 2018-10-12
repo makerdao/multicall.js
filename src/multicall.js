@@ -1,6 +1,6 @@
 import Web3 from 'web3';
 import flatten from 'lodash.flatten';
-import { strip0x, typesLength, parseUnit } from './helpers.js';
+import { strip0x, typesLength, parseUnit, ethCall } from './helpers.js';
 import config from './config.json';
 
 const { padLeft, numberToHex } = Web3.utils;
@@ -50,7 +50,7 @@ export default class MultiCall {
 
   async aggregate(calls) {
     const calldata = this.makeMulticallData(calls, false, this.web3.eth);
-    const result = await this.contract.methods.aggregate(calldata).call();
+    const result = await ethCall(calldata, this.config);
     const blockNumber = this.web3.eth.abi.decodeParameter(
       'uint256',
       result.slice(0, 66)

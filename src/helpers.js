@@ -1,6 +1,5 @@
-import Web3 from 'web3';
-const { fromWei } = Web3.utils;
-import 'isomorphic-fetch';
+import fetch from 'node-fetch';
+import { defaultAbiCoder } from 'ethers/utils/abi-coder';
 
 export const AGGREGATE_SELECTOR = '0x9af53fc6';
 
@@ -12,12 +11,20 @@ export function typesLength(types) {
   return types.length;
 }
 
-export function parseUnit(unit, val) {
-  if (unit !== undefined) {
-    if (unit === 'WAD') return fromWei(val, 'ether');
-    if (unit === 'RAY') return fromWei(val, 'gether');
-  }
-  return val;
+export function encodeParameter(type, val) {
+  return encodeParameters([type], [val]);
+}
+
+export function encodeParameters(types, vals) {
+  return defaultAbiCoder.encode(types, vals);
+}
+
+export function decodeParameter(type, val) {
+  return decodeParameters([type], val);
+}
+
+export function decodeParameters(types, vals) {
+  return defaultAbiCoder.decode(types, '0x' + vals.replace(/0x/i, ''));
 }
 
 export function padLeft(string, chars, sign) {
@@ -42,15 +49,6 @@ export function padRight(string, chars, sign) {
   );
 }
 
-export function numberToHex(value) {
-  if (_.isNull(value) || _.isUndefined(value)) return value;
-  if (!isFinite(value) && !isHexStrict(value))
-    throw new Error('Given input "' + value + '" is not a number.');
-  var number = toBN(value);
-  var result = number.toString(16);
-  return number.lt(new BN(0)) ? '-0x' + result.substr(1) : '0x' + result;
-}
-
 function formatInputBytes(rawData) {
   const bytesLength = padLeft((rawData.length / 2).toString(16), 64);
   const location = padLeft('20', 64);
@@ -60,8 +58,12 @@ function formatInputBytes(rawData) {
   return AGGREGATE_SELECTOR + result;
 }
 
+function stripWords(bytes, numWords) {
+  return '0x' + strip0x(bytes).substr(64 * numWords);
+}
+
 export async function ethCall(rawData, config) {
-  const abiEncodedData = formatInputBytes(rawData.substring(2));
+  const abiEncodedData = formatInputBytes(strip0x(rawData));
   const rawResponse = await fetch(config.rpcNode, {
     method: 'POST',
     headers: {
@@ -82,5 +84,5 @@ export async function ethCall(rawData, config) {
     })
   });
   const content = await rawResponse.json();
-  return '0x' + content.result.slice(130);
+  return stripWords(content.result, 2);
 }

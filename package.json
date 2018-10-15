@@ -1,6 +1,6 @@
 {
-  "name": "@makerdao/multicall.js",
-  "version": "0.0.1",
+  "name": "@makerdao/multicall",
+  "version": "0.0.25",
   "contributors": [
     "Michael Elliot <mike@makerdao.com>",
     "Joshua Levine <joshua@makerdao.com>",
@@ -18,39 +18,43 @@
     "type": "git",
     "url": "https://github.com/makerdao/multicall.js.git"
   },
-  "module": "src/index.js",
-  "main": "src/index.js",
+  "main": "index.js",
+  "browserslist": "> 0.25%, not dead",
+  "files": [
+    "src/*",
+    "test*",
+    "index.js",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ],
   "scripts": {
-    "build:frontend": "./scripts/build-frontend.sh",
-    "lint": "eslint src test",
+    "build": "rollup -c",
+    "watch": "rollup -w -c",
     "examples": "node_modules/.bin/babel-node examples/cdp-portal-example.js",
     "test": "jest --runInBand --config ./test/jest-config.json",
-    "test:watch": "jest --watch --runInBand --config ./test/jest-config.json",
-    "test2:watch": "jest --watch"
+    "precommit": "yarn build"
   },
   "dependencies": {
-    "isomorphic-fetch": "^2.2.1",
-    "lodash.flatten": "^4.4.0",
-    "web3": "1.0.0-beta.36"
+    "ethers": "^4.0.6",
+    "js-sha3": "^0.8.0",
+    "node-fetch": "^2.2.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.1.2",
     "@babel/core": "^7.1.2",
     "@babel/node": "^7.0.0",
-    "@babel/plugin-proposal-class-properties": "^7.1.0",
-    "@babel/plugin-proposal-decorators": "^7.1.2",
-    "@babel/plugin-proposal-export-namespace-from": "^7.0.0",
-    "@babel/plugin-proposal-function-sent": "^7.1.0",
-    "@babel/plugin-proposal-json-strings": "^7.0.0",
-    "@babel/plugin-proposal-numeric-separator": "^7.0.0",
-    "@babel/plugin-proposal-throw-expressions": "^7.0.0",
-    "@babel/plugin-syntax-dynamic-import": "^7.0.0",
-    "@babel/plugin-syntax-import-meta": "^7.0.0",
     "@babel/plugin-transform-runtime": "^7.1.0",
     "@babel/preset-env": "^7.1.0",
     "@babel/runtime": "^7.1.2",
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^23.6.0",
-    "jest": "^23.6.0"
+    "jest": "^23.6.0",
+    "rollup": "^0.66.6",
+    "rollup-plugin-babel": "^4.0.3",
+    "rollup-plugin-bundle-size": "^1.0.2",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-json": "^3.1.0",
+    "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-uglify-es": "^0.0.1"
   }
 }

@@ -1,3 +1,3 @@
-import MultiCall from './multicall';
+'use strict';
 
-module.exports = MultiCall;
+module.exports = require('./multicall');

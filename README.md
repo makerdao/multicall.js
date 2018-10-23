@@ -1,5 +1,4 @@
-Multicall.js
-=========================
+# Multicall.js
 
 [![npm version](https://img.shields.io/npm/v/@makerdao/multicall.svg?style=flat-square)](https://www.npmjs.com/package/@makerdao/multicall)
 
@@ -21,16 +20,18 @@ Currently supported data types are: booleans, integers, addresses, fixed-size by
 
 ## Summary
 
-* Get the return value from different smart contract function calls in a single call
-* Assurance that all values are from the same block number / block height
-* Compare the returned block number against the previous call's block number to know if it's possible for any returned values to be different (i.e. for polling)
-
+- Get the return value from different smart contract function calls in a single call
+- Assurance that all values are from the same block number / block height
+- Compare the returned block number against the previous call's block number to know if it's possible for any returned values to be different (i.e. for polling)
 
 ## Usage
 
 ```
 import MultiCall from "@makerdao/multicall";
-const multicall = new MultiCall('kovan'); // kovan or mainnet
+
+// "kovan" or "mainnet" presets
+// optionally pass in a specific block you'd like to query (defaults to "latest")
+const multicall = new MultiCall('kovan', { block: 9158211 });
 
 
 const { blockNumber, mkrBalance, priceOracleAddress } = await multicall.aggregate([
@@ -45,9 +46,9 @@ const { blockNumber, mkrBalance, priceOracleAddress } = await multicall.aggregat
         method: 'pip()',
         returns: [['priceFeed', 'address']]
     },
-    
+
     // ... etc, many more value reads are possible w/ this request
-    
+
 ]); // all of these values are fetched within a single call
 
 
@@ -65,13 +66,13 @@ multicall.aggregate([
         method: 'pip()',
         returns: [['priceFeed', 'address']]
     },
-    
+
     // ... etc, many more value reads are possible w/ this request
-    
+
 ]).then(({ blockNumber, mkrBalance, priceOracleAddress }) => {
 
     // all of these values are fetched within a single call
-    
+
 });
 ```
 

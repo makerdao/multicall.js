@@ -8499,7 +8499,7 @@ function _ethCall() {
                 params: [{
                   to: config.multicallContractAddress,
                   data: abiEncodedData
-                }, 'latest'],
+                }, config.block],
                 id: 1
               })
             });
@@ -9218,21 +9218,31 @@ var MultiCall =
 /*#__PURE__*/
 function () {
   function MultiCall(preset) {
+    var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+        _ref$block = _ref.block,
+        block = _ref$block === void 0 ? 'latest' : _ref$block;
+
     classCallCheck(this, MultiCall);
 
     this.config = {};
     Object.assign(this.config, config.presets[preset]);
+
+    var _block = block === 'latest' ? 'latest' : '0x' + Number(block).toString(16);
+
+    Object.assign(this.config, {
+      block: _block
+    });
   }
 
   createClass(MultiCall, [{
     key: "_makeMulticallData",
     value: function _makeMulticallData(calls, keepAsArray) {
       var totalReturnsLength = 0;
-      var components = calls.reduce(function (acc, _ref) {
-        var to = _ref.to,
-            method = _ref.method,
-            args = _ref.args,
-            returns = _ref.returns;
+      var components = calls.reduce(function (acc, _ref2) {
+        var to = _ref2.to,
+            method = _ref2.method,
+            args = _ref2.args,
+            returns = _ref2.returns;
         var returnsLength = typesLength(returns.map(function (r) {
           return r[1];
         }));

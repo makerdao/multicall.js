@@ -78,7 +78,7 @@ export async function ethCall(rawData, config) {
           to: config.multicallContractAddress,
           data: abiEncodedData
         },
-        'latest'
+        config.block
       ],
       id: 1
     })

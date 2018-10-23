@@ -12,9 +12,12 @@ import config from './config.json';
 import { keccak256 } from 'js-sha3';
 
 export default class MultiCall {
-  constructor(preset) {
+  constructor(preset, { block = 'latest' } = {}) {
     this.config = {};
     Object.assign(this.config, config.presets[preset]);
+    const _block =
+      block === 'latest' ? 'latest' : '0x' + Number(block).toString(16);
+    Object.assign(this.config, { block: _block });
   }
 
   _makeMulticallData(calls, keepAsArray) {

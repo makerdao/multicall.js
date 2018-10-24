@@ -9285,14 +9285,14 @@ function () {
                   });
                 }).reduce(function (acc, ele) {
                   return acc.concat(ele);
-                });
+                }, []);
                 retNameArray = calls.map(function (ele) {
                   return ele.returns.map(function (ele) {
                     return ele[0];
                   });
                 }).reduce(function (acc, ele) {
                   return acc.concat(ele);
-                });
+                }, []);
                 parsedVals = decodeParameters(typeArray, '0x' + result.slice(67)).map(function (ele) {
                   if (ele.toString() === 'true') return true;
                   if (ele.toString() === 'false') return false;

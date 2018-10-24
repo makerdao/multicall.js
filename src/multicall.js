@@ -52,10 +52,10 @@ export default class MultiCall {
     )[0].toString();
     const typeArray = calls
       .map(ele => ele.returns.map(ele => ele[1]))
-      .reduce((acc, ele) => acc.concat(ele));
+      .reduce((acc, ele) => acc.concat(ele), []);
     const retNameArray = calls
       .map(ele => ele.returns.map(ele => ele[0]))
-      .reduce((acc, ele) => acc.concat(ele));
+      .reduce((acc, ele) => acc.concat(ele), []);
     const parsedVals = decodeParameters(typeArray, '0x' + result.slice(67)).map(
       ele => {
         if (ele.toString() === 'true') return true;

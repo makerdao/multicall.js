@@ -8529,6 +8529,11 @@ var presets = {
 		multicallContractAddress: "0xb2155b4f516a2e93fd0c40fdba57a3ab39952236",
 		helperContractAddress: "0x5b630ba8fe98ebed5381c868cd6b8d23875b6ca7"
 	},
+	rinkeby: {
+		rpcNode: "https://rinkeby.infura.io",
+		multicallContractAddress: "0x77dca2c955b15e9de4dbbcf1246b4b85b651e50e",
+		helperContractAddress: "0xadb7c74bce932fc6c27dda3ac2344707d2fbb0e6"
+	},
 	mainnet: {
 		rpcNode: "https://mainnet.infura.io",
 		multicallContractAddress: "0x4844f6ce55baf02362c7dcac26fd9dd968a2071b",

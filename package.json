@@ -31,7 +31,7 @@
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -w -c",
-    "examples": "node_modules/.bin/babel-node examples/cdp-portal-example.js",
+    "examples": "node_modules/.bin/babel-node examples/api.js",
     "test": "jest --runInBand --config ./test/jest-config.json",
     "precommit": "yarn build"
   },

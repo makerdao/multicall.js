@@ -18,11 +18,14 @@ export default class MultiCall {
   templates = {};
   registered = [];
   onUpdateHandlers = [];
+  onEachUpdateHandlers = [];
   noNewBlockRetryInterval = 1000;
   pollingInterval = 5000;
   pollingHandle = null;
   firstPoll = true;
   latestBlock = null;
+  ignoreUnchanged = true;
+  previousState = {};
 
   constructor(preset, { block = 'latest' } = {}) {
     Object.assign(this.config, config.presets[preset]);
@@ -31,6 +34,9 @@ export default class MultiCall {
   }
   onUpdate(cb) {
     this.onUpdateHandlers.push(cb);
+  }
+  onEachUpdate(cb) {
+    this.onEachUpdateHandlers.push(cb);
   }
   startPolling(interval = this.pollingInterval) {
     if (this.firstPoll === true) {
@@ -47,7 +53,14 @@ export default class MultiCall {
         return;
       }
       this.pollingHandle = null;
-      this.onUpdateHandlers.forEach(cb => cb(results));
+
+      if (this.onUpdateHandlers.length > 0) this.onUpdateHandlers.forEach(cb => cb(results));
+        Object.keys(results).forEach(key => {
+          if (typeof this.previousState[key] !== 'undefined' && this.previousState[key] === results[key]) return;
+          this.previousState[key] = results[key];
+          if (this.onEachUpdateHandlers.length > 0) this.onEachUpdateHandlers.forEach(cb => cb(key, results[key]))
+        });
+
       if (this.pollingHandle === null) this.startPolling();
     }, interval);
   }
@@ -60,6 +73,9 @@ export default class MultiCall {
     return await this.aggregate(calls);
   }
   registerTemplate(name, args) {
+    // if (args.ignoreUnchanged === true) {
+    //   delete args.ignoreUnchanged;
+    // }
     this.registered.push({ name, args });
   }
   registerTemplates(templates) {

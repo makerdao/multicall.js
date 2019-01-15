@@ -7,5 +7,11 @@
       }
     ]
   ],
-  "plugins": ["@babel/plugin-transform-runtime", "@babel/plugin-proposal-class-properties"]
+  "plugins": ["@babel/plugin-transform-runtime", "@babel/plugin-proposal-class-properties"],
+  "env": {
+    "debug": {
+      "sourceMaps": "inline",
+      "retainLines": true
+    }
+  }
 }

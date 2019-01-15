@@ -3,7 +3,8 @@ const tokens = {
   MKR: 'MKR',
   WETH: 'WETH',
   PETH: 'PETH',
-  ETH: 'ETH'
+  ETH: 'ETH',
+  REP: 'REP'
 };
 
 // TODO: Do we really need to use lodash?

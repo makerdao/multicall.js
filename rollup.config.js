@@ -8,6 +8,10 @@ import bundleSize from 'rollup-plugin-bundle-size';
 module.exports = {
   input: 'src/index.js',
   plugins: [
+    babel({
+      runtimeHelpers: true,
+      exclude: 'node_modules/**'
+    }),
     json(),
     resolve(),
     commonjs({
@@ -15,15 +19,11 @@ module.exports = {
         'node_modules/js-sha3/src/sha3.js': ['keccak256']
       }
     }),
-    bundleSize(),
-    babel({
-      runtimeHelpers: true,
-      exclude: 'node_modules/**'
-    })
+    bundleSize()
     // uglify()
   ],
   output: {
-    file: 'index.js',
+    file: 'build.js',
     format: 'cjs'
   }
 };

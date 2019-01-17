@@ -44,6 +44,17 @@ export function _makeMulticallData(calls, keepAsArray) {
 export default async function aggregate(calls, config) {
   calls = Array.isArray(calls) ? calls : [calls];
 
+  const keyToArgMap = calls.reduce((acc, { call, returns }) => {
+    const [, ...args] = call;
+    if (args.length > 0) {
+      for (let returnMeta of returns) {
+        const [key] = returnMeta;
+        acc[key] = args;
+      }
+    }
+    return acc;
+  }, {});
+
   calls = calls.map(({ call, target, returns }) => {
     const [method, ...argValues] = call;
     const [argTypesString, returnTypesString] = method
@@ -98,7 +109,7 @@ export default async function aggregate(calls, config) {
   const retObj = { blockNumber };
 
   if (config.returnUnfiltered) {
-    const retObjUnfiltered = { blockNumber }
+    const retObjUnfiltered = { blockNumber };
     for (let i = 0; i < parsedVals.length; i++) {
       const [name, transform] = returnDataMeta[i];
       retObj[name] =
@@ -114,5 +125,5 @@ export default async function aggregate(calls, config) {
       transform !== undefined ? transform(parsedVals[i]) : parsedVals[i];
   }
 
-  return retObj;
+  return { results: retObj, keyToArgMap };
 }

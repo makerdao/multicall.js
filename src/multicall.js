@@ -1,145 +1,124 @@
 import aggregate from './aggregate';
-import config from './config.json';
 
-export default class MultiCall {
-  config = {};
-  globals = {};
-  templates = {};
-  registered = [];
-  onUpdateHandlers = [];
-  onEachUpdateHandlers = [];
-  noNewBlockRetryInterval = 1000;
-  pollingInterval = 5000;
-  pollingHandle = null;
-  firstPoll = true;
-  latestBlock = null;
-  ignoreUnchanged = true;
-  previousState = {};
+function isEmpty(obj) {
+  if (Array.isArray(obj)) return obj.length === 0;
+  return !obj || Object.keys(obj).length === 0;
+}
 
-  constructor(preset, { block = 'latest' } = {}) {
-    Object.assign(this.config, config.presets[preset]);
-    const _block =
-      block === 'latest' ? 'latest' : '0x' + Number(block).toString(16);
-    Object.assign(this.config, { block: _block });
+function isNewState(type, value, store) {
+  return store[type] === undefined || store[type] !== value;
+}
+
+export function createWatcher(defaultModel, config) {
+  const state = {
+    model: defaultModel,
+    store: {},
+    latestBlock: null,
+    listeners: [],
+    handler: null,
+    watching: false,
+    config,
+    id: 0
+  };
+
+  state.hasCompletedInitialFetch = new Promise(resolve => {
+    state.initialFetchResolver = resolve;
+  });
+
+  function subscribe(listener, id, batch = false) {
+    // TODO emit everything they've missed if we have cached state?
+    state.listeners.push({ listener, id, batch });
   }
 
-  onUpdate(cb) {
-    this.onUpdateHandlers.push(cb);
+  function pingListeners(events) {
+    if (!isEmpty(events))
+      state.listeners.forEach(({ listener, batch }) =>
+        batch ? listener(events) : events.forEach(listener)
+      );
   }
 
-  onEachUpdate(cb) {
-    this.onEachUpdateHandlers.push(cb);
-  }
+  function poll() {
+    this.state.handler = setTimeout(async () => {
+      const {
+        results: { blockNumber, ...data },
+        keyToArgMap
+      } = await aggregate(this.state.model, config);
 
-  startPolling(interval = this.pollingInterval) {
-    if (this.firstPoll === true) {
-      interval = 0;
-      this.firstPoll = false;
-    }
-    if (this.pollingHandle !== null) clearTimeout(this.pollingHandle);
+      state.initialFetchResolver();
 
-    console.debug(`Polling with interval ${interval}ms`);
-    this.pollingHandle = setTimeout(async () => {
-      const [results, resultsUnfiltered] = await this.poll();
-      const blockNumber = results.blockNumber;
-      if (this.latestBlock !== null && blockNumber <= this.latestBlock) {
-        this.startPolling(this.noNewBlockRetryInterval);
-        return;
+      if (blockNumber === state.latestBlock) poll.call({ state: this.state });
+      else {
+        const events = Object.entries(data)
+          .filter(([type, value]) => isNewState(type, value, this.state.store))
+          .map(([type, value]) => ({
+            type,
+            value,
+            args: keyToArgMap[type] || []
+          }));
+        this.state.store = { ...data, keyToArgMap };
+        pingListeners(events);
+        poll.call({ state: this.state });
       }
-      this.latestBlock = blockNumber;
-      this.pollingHandle = null;
-
-      if (this.onUpdateHandlers.length > 0)
-        this.onUpdateHandlers.forEach(cb => cb(results));
-      Object.keys(results).forEach(key => {
-        if (
-          this.previousState[key] !== undefined &&
-          this.previousState[key] === resultsUnfiltered[key]
-        )
-          return;
-        this.previousState[key] = resultsUnfiltered[key];
-        if (this.onEachUpdateHandlers.length > 0)
-          this.onEachUpdateHandlers.forEach(cb => cb(key, results[key]));
-      });
-
-      if (this.pollingHandle === null) this.startPolling();
-    }, interval);
+      // TODO change interval if we haven't hit a new block
+    }, this.interval || config.interval || 1000);
   }
 
-  stopPolling() {
-    if (this.pollingHandle !== null) clearTimeout(this.pollingHandle);
-    this.firstPoll = true;
-  }
-
-  async poll() {
-    const calls = this.registered.map(call =>
-      this.templates[call.name](call.args)
-    );
-    const [results, resultsUnfiltered] = await this.aggregate(calls, { returnUnfiltered: true });
-
-    // Template action handling
-    let resultOffset = 1;
-    calls.forEach(call => {
-      if (typeof call.action === 'function') {
-        const actionResultKeys = Object.keys(results).slice(
-          resultOffset,
-          resultOffset + call.returns.length
-        );
-        // Check if any result state is different
-        let stateChange = false;
-        for (let key of actionResultKeys) {
-          if (this.previousState[key] !== resultsUnfiltered[key]) {
-            stateChange = true;
-            break;
-          }
+  // TODO bring templates back
+  const watcher = {
+    tap(transform) {
+      const nextModel = transform([...state.model]);
+      state.model = [...nextModel];
+      if (state.watching) {
+        clearTimeout(state.handler);
+        state.handler = null;
+        poll.call({ state });
+      }
+    },
+    subscribe(listener) {
+      const id = state.id++;
+      subscribe(listener, id, false);
+      return {
+        unsub() {
+          state.listeners = state.listeners.filter(({ id: _id }) => _id !== id);
         }
-        if (!stateChange) return;
-        // Call template action
-        const actionResults = actionResultKeys.reduce((acc, key) => {
-          acc[key] = results[key];
-          return acc;
-        }, {});
-        call.action(actionResults);
+      };
+    },
+    batchStateDiffs() {
+      return {
+        subscribe(listener) {
+          const id = state.id++;
+          subscribe(listener, id, true);
+          return {
+            unsub() {
+              state.listeners = state.listeners.filter(
+                ({ id: _id }) => _id !== id
+              );
+            }
+          };
+        }
+      };
+    },
+    startWatch() {
+      state.watching = true;
+      poll.call({ state, interval: 0 });
+      return watcher;
+    },
+    stopWatch() {
+      clearTimeout(state.handler);
+      state.handler = null;
+      state.watching = false;
+    },
+    setConfig(_config) {
+      state.config = { ..._config };
+      if (state.watching) {
+        clearTimeout(state.handler);
+        state.handler = null;
+        poll.call({ state, interval: 0 });
       }
-      resultOffset += call.returns.length;
-    });
-
-    return [results, resultsUnfiltered];
-  }
-
-  registerTemplate(name, args) {
-    this.registered.push({ name, args });
-  }
-
-  registerTemplates(templates) {
-    templates.forEach(template =>
-      this.registerTemplate(template[0], template[1] || undefined)
-    );
-  }
-
-  createTemplate(name, cb) {
-    this.templates[name] = args => cb({ ...this.globals, ...args });
-  }
-
-  createTemplates(templates) {
-    for (const key of Object.keys(templates)) {
-      this.createTemplate(key, templates[key]);
+    },
+    awaitInitialFetch() {
+      return state.hasCompletedInitialFetch;
     }
-  }
-
-  setGlobal(key, value) {
-    this.globals[key] = value;
-  }
-
-  setGlobals(fields) {
-    this.globals = { ...this.globals, ...fields };
-  }
-
-  getGlobal(key) {
-    return this.globals[key];
-  }
-
-  aggregate(calls, config) {
-    return aggregate(calls, { ...this.config, ...config });
-  }
+  };
+  return watcher;
 }

@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+import fetch from 'cross-fetch';
 import { defaultAbiCoder } from 'ethers/utils/abi-coder';
 
 export const AGGREGATE_SELECTOR = '0x9af53fc6';
@@ -67,7 +67,7 @@ export async function ethCall(rawData, config) {
   const rawResponse = await fetch(config.rpcNode, {
     method: 'POST',
     headers: {
-      'Accept': 'application/json',
+      Accept: 'application/json',
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
@@ -75,7 +75,7 @@ export async function ethCall(rawData, config) {
       method: 'eth_call',
       params: [
         {
-          to: config.multicallContractAddress,
+          to: config.multicallAddress,
           data: abiEncodedData
         },
         config.block

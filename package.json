@@ -1,6 +1,6 @@
 {
   "name": "@makerdao/multicall",
-  "version": "0.2.0",
+  "version": "0.2.0-alpha.beta",
   "contributors": [
     "Michael Elliot <mike@makerdao.com>",
     "Joshua Levine <joshua@makerdao.com>",
@@ -37,10 +37,10 @@
   },
   "dependencies": {
     "bignumber.js": "^8.0.1",
+    "cross-fetch": "^3.0.0",
     "ethers": "^4.0.6",
     "js-sha3": "^0.8.0",
-    "lodash.values": "^4.3.0",
-    "node-fetch": "^2.2.0"
+    "lodash.values": "^4.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",

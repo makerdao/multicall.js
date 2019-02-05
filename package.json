@@ -1,6 +1,6 @@
 {
   "name": "@makerdao/multicall",
-  "version": "0.2.234-alpha",
+  "version": "0.4.0",
   "contributors": [
     "Michael Elliot <mike@makerdao.com>",
     "Joshua Levine <joshua@makerdao.com>",

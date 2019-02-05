@@ -1,3 +1,3 @@
-'use strict';
+import createWatcher from './watcher';
 
-module.exports = require('./multicall');
+export { createWatcher };

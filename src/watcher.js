@@ -1,15 +1,13 @@
 import aggregate from './aggregate';
-
-function isEmpty(obj) {
-  if (Array.isArray(obj)) return obj.length === 0;
-  return !obj || Object.keys(obj).length === 0;
-}
+import { isEmpty } from './helpers';
 
 function isNewState(type, value, store) {
-  return store[type] === undefined || store[type] !== value;
+  return (
+    store[type] === undefined || store[type].toString() !== value.toString()
+  );
 }
 
-export function createWatcher(defaultModel, config) {
+export default function createWatcher(defaultModel, config) {
   const state = {
     model: defaultModel,
     store: {},
@@ -21,16 +19,15 @@ export function createWatcher(defaultModel, config) {
     id: 0
   };
 
-  state.hasCompletedInitialFetch = new Promise(resolve => {
+  state.initialFetchPromise = new Promise(resolve => {
     state.initialFetchResolver = resolve;
   });
 
   function subscribe(listener, id, batch = false) {
-    // TODO emit everything they've missed if we have cached state?
     state.listeners.push({ listener, id, batch });
   }
 
-  function pingListeners(events) {
+  function alertListeners(events) {
     if (!isEmpty(events))
       state.listeners.forEach(({ listener, batch }) =>
         batch ? listener(events) : events.forEach(listener)
@@ -44,9 +41,11 @@ export function createWatcher(defaultModel, config) {
         keyToArgMap
       } = await aggregate(this.state.model, config);
 
-      state.initialFetchResolver();
+      if (typeof this.resolveFetchPromise === 'function')
+        this.resolveFetchPromise();
 
-      if (blockNumber === state.latestBlock) poll.call({ state: this.state });
+      if (blockNumber === this.state.latestBlock)
+        poll.call({ state: this.state });
       else {
         const events = Object.entries(data)
           .filter(([type, value]) => isNewState(type, value, this.state.store))
@@ -56,23 +55,28 @@ export function createWatcher(defaultModel, config) {
             args: keyToArgMap[type] || []
           }));
         this.state.store = { ...data, keyToArgMap };
-        pingListeners(events);
+        this.state.blockNumber = blockNumber;
+        alertListeners(events);
         poll.call({ state: this.state });
       }
-      // TODO change interval if we haven't hit a new block
     }, this.interval || config.interval || 1000);
   }
 
-  // TODO bring templates back
   const watcher = {
     tap(transform) {
+      let resolveFetchPromise;
+      const fetchPromise = new Promise(resolve => {
+        resolveFetchPromise = resolve;
+      });
       const nextModel = transform([...state.model]);
       state.model = [...nextModel];
       if (state.watching) {
         clearTimeout(state.handler);
         state.handler = null;
-        poll.call({ state });
+        poll.call({ state, interval: 0, resolveFetchPromise });
+        return fetchPromise;
       }
+      return Promise.resolve();
     },
     subscribe(listener) {
       const id = state.id++;
@@ -83,7 +87,7 @@ export function createWatcher(defaultModel, config) {
         }
       };
     },
-    batchStateDiffs() {
+    batch() {
       return {
         subscribe(listener) {
           const id = state.id++;
@@ -98,27 +102,44 @@ export function createWatcher(defaultModel, config) {
         }
       };
     },
-    startWatch() {
+    start() {
       state.watching = true;
-      poll.call({ state, interval: 0 });
+      poll.call({
+        state,
+        interval: 0,
+        resolveFetchPromise: state.initialFetchResolver
+      });
       return watcher;
     },
-    stopWatch() {
+    stop() {
       clearTimeout(state.handler);
       state.handler = null;
       state.watching = false;
     },
-    setConfig(_config) {
-      state.config = { ..._config };
+    reCreate(model, config) {
+      clearTimeout(state.handler);
+      state.handler = null;
+      state.config = { ...config };
+      state.model = [...model];
+      state.store = {};
       if (state.watching) {
-        clearTimeout(state.handler);
-        state.handler = null;
-        poll.call({ state, interval: 0 });
+        let resolveFetchPromise;
+        const fetchPromise = new Promise(resolve => {
+          resolveFetchPromise = resolve;
+        });
+        poll.call({
+          state,
+          interval: 0,
+          resolveFetchPromise
+        });
+        return fetchPromise;
       }
+      return Promise.resolve();
     },
     awaitInitialFetch() {
-      return state.hasCompletedInitialFetch;
+      return state.initialFetchPromise;
     }
   };
+
   return watcher;
 }

@@ -1,0 +1,7 @@
+{
+  "multicall": {
+    "kovan": "0xb2155b4f516a2e93fd0c40fdba57a3ab39952236",
+    "rinkeby": "0x77dca2c955b15e9de4dbbcf1246b4b85b651e50e",
+    "mainnet": "0x4844f6ce55baf02362c7dcac26fd9dd968a2071b"
+  }
+}

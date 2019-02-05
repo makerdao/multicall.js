@@ -108,17 +108,6 @@ export default async function aggregate(calls, config) {
 
   const retObj = { blockNumber };
 
-  if (config.returnUnfiltered) {
-    const retObjUnfiltered = { blockNumber };
-    for (let i = 0; i < parsedVals.length; i++) {
-      const [name, transform] = returnDataMeta[i];
-      retObj[name] =
-        transform !== undefined ? transform(parsedVals[i]) : parsedVals[i];
-      retObjUnfiltered[name] = parsedVals[i];
-    }
-    return [retObj, retObjUnfiltered];
-  }
-
   for (let i = 0; i < parsedVals.length; i++) {
     const [name, transform] = returnDataMeta[i];
     retObj[name] =

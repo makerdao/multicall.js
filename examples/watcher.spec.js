@@ -1,21 +1,13 @@
 import { createWatcher } from '../src';
-import BigNumber from 'bignumber.js';
 
 const MKR_TOKEN = '0xAaF64BFCC32d0F15873a02163e7E500671a4ffcD';
 const MKR_WHALE = '0xdb33dfd3d61308c33c63209845dad3e6bfb2c674';
 const MKR_FISH = '0x2dfcedcb401557354d0cf174876ab17bfd6f4efd';
 
 const config = {
-  rpcNode: 'https://kovan.infura.io',
-  multicallAddress: '0xb2155b4f516a2e93fd0c40fdba57a3ab39952236',
-  block: 'latest'
+  rpcURL: 'https://kovan.infura.io',
+  multicallAddress: '0xb2155b4f516a2e93fd0c40fdba57a3ab39952236'
 };
-
-function fromWei(value) {
-  return BigNumber(value)
-    .shiftedBy(-18)
-    .toFixed();
-}
 
 (async () => {
   const watcher = createWatcher(
@@ -23,7 +15,7 @@ function fromWei(value) {
       {
         target: MKR_TOKEN,
         call: ['balanceOf(address)(uint256)', MKR_WHALE],
-        returns: [['BALACE_OF', fromWei]]
+        returns: [['BALACE_OF', val => val / 10 ** 18]]
       }
     ],
     config
@@ -33,29 +25,50 @@ function fromWei(value) {
     console.log(events, 'events');
   });
 
-  watcher.batchStateDiffs().subscribe(events => {
+  watcher.batch().subscribe(events => {
     console.log(events, 'events batched');
   });
 
-  watcher.startWatch();
+  watcher.start();
 
   await watcher.awaitInitialFetch();
 
-  console.log('fetched');
+  console.log('initial fetch');
 
-  // add calls to the model
   setTimeout(() => {
-    watcher.tap(model =>
+    console.log('update model');
+    const fetchWaiter = watcher.tap(model =>
       model.concat([
-        ...model,
         {
           target: MKR_TOKEN,
           call: ['balanceOf(address)(uint256)', MKR_FISH],
-          returns: [['BALACE_OF', fromWei]]
+          returns: [['BALACE_OF', val => val / 10 ** 18]]
         }
       ])
     );
+
+    fetchWaiter.then(() => {
+      console.log('new model fetch');
+    });
   }, 5000);
+
+  setTimeout(() => {
+    console.log('update config');
+    const fetchWaiter = watcher.reCreate(
+      [
+        {
+          target: MKR_TOKEN,
+          call: ['balanceOf(address)(uint256)', MKR_WHALE],
+          returns: [['BALACE_OF', val => val / 10 ** 18]]
+        }
+      ],
+      config
+    );
+
+    fetchWaiter.then(() => {
+      console.log('new config fetch');
+    });
+  }, 10000);
 })();
 
 (async () => {

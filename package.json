@@ -31,16 +31,14 @@
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -w -c",
-    "examples": "node_modules/.bin/babel-node examples/api.js",
+    "examples": "node_modules/.bin/babel-node examples/watcher.spec.js",
     "test": "jest --runInBand --config ./test/jest-config.json",
     "precommit": "yarn build"
   },
   "dependencies": {
-    "bignumber.js": "^8.0.1",
     "cross-fetch": "^3.0.0",
     "ethers": "^4.0.6",
-    "js-sha3": "^0.8.0",
-    "lodash.values": "^4.3.0"
+    "js-sha3": "^0.8.0"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",

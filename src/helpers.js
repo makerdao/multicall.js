@@ -62,9 +62,14 @@ function stripWords(bytes, numWords) {
   return '0x' + strip0x(bytes).substr(64 * numWords);
 }
 
-export async function ethCall(rawData, config) {
+export function isEmpty(obj) {
+  if (Array.isArray(obj)) return obj.length === 0;
+  return !obj || Object.keys(obj).length === 0;
+}
+
+export async function ethCall(rawData, { rpcURL, block, multicallAddress }) {
   const abiEncodedData = formatInputBytes(strip0x(rawData));
-  const rawResponse = await fetch(config.rpcNode, {
+  const rawResponse = await fetch(rpcURL, {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -75,10 +80,10 @@ export async function ethCall(rawData, config) {
       method: 'eth_call',
       params: [
         {
-          to: config.multicallAddress,
+          to: multicallAddress,
           data: abiEncodedData
         },
-        config.block
+        block || 'latest'
       ],
       id: 1
     })

@@ -1,12 +1,12 @@
-import MultiCall from '../src';
-const multicall = new MultiCall('kovan');
+import { _makeMulticallData as makeMulticallData } from '../src/aggregate';
 
 test('no args', () => {
   const calls = [
     {
-      to: '0xbbf289d846208c16edc8474705c748aff07732db',
+      target: '0xbbf289d846208c16edc8474705c748aff07732db',
       method: 'what()',
-      returns: [['foo', 'uint256']]
+      returns: [['foo']],
+      returnTypes: ['uint256']
     }
   ];
   const expected = [
@@ -17,37 +17,39 @@ test('no args', () => {
     '0000000000000000000000000000000000000000000000000000000000000004',
     'b24bb845'
   ];
-  expect(multicall._makeMulticallData(calls, true)).toEqual(expected);
+  expect(makeMulticallData(calls, true)).toEqual(expected);
 });
 
 test('two calls, one with args', () => {
   const calls = [
     {
-      to: '0xbeefed1bedded2dabbed3defaced4decade5dead',
-      method: 'fess(guy)',
+      target: '0xbeefed1bedded2dabbed3defaced4decade5dead',
+      method: 'fess(address)',
       args: [['0xbeefed1bedded2dabbed3defaced4decade5bead', 'address']],
-      returns: [['kay', 'uint256'], ['jewelers', 'address']]
+      returnTypes: ['uint256', 'address'],
+      returns: [['kay'], ['jewelers']]
     },
     {
-      to: '0xbeefed1bedded2dabbed3defaced4decade5face',
+      target: '0xbeefed1bedded2dabbed3defaced4decade5face',
       method: 'flog()',
-      returns: [['deBeers', 'bytes32']]
+      returns: [['deBeers']],
+      returnTypes: ['bytes32'],
     }
   ];
-  const actual = multicall._makeMulticallData(calls, true);
+  const actual = makeMulticallData(calls, true);
   const expected = [
     '0000000000000000000000000000000000000000000000000000000000000003', // total returns
     '000000000000000000000000beefed1bedded2dabbed3defaced4decade5dead', // address
     '0000000000000000000000000000000000000000000000000000000000000002', // length of returns (in words)
     '0000000000000000000000000000000000000000000000000000000000000040', //
     '0000000000000000000000000000000000000000000000000000000000000024', // length of method sig + args
-    '7db93317', // method sig
+    'c963c57b', // method sig
     '000000000000000000000000beefed1bedded2dabbed3defaced4decade5bead', // arg
-    '000000000000000000000000beefed1bedded2dabbed3defaced4decade5face',
+    '000000000000000000000000beefed1bedded2dabbed3defaced4decade5face', // arg
     '0000000000000000000000000000000000000000000000000000000000000001',
     '0000000000000000000000000000000000000000000000000000000000000040',
     '0000000000000000000000000000000000000000000000000000000000000004',
-    'a7c795fa'
+    'a7c795fa' // method sig
   ];
   expect(actual).toEqual(expected);
 });

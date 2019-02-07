@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch';
 import { defaultAbiCoder } from 'ethers/utils/abi-coder';
 
 export const AGGREGATE_SELECTOR = '0x9af53fc6';
@@ -67,9 +66,9 @@ export function isEmpty(obj) {
   return !obj || Object.keys(obj).length === 0;
 }
 
-export async function ethCall(rawData, { rpcURL, block, multicallAddress }) {
+export async function ethCall(rawData, { rpcUrl, block, multicallAddress }) {
   const abiEncodedData = formatInputBytes(strip0x(rawData));
-  const rawResponse = await fetch(rpcURL, {
+  const rawResponse = await fetch(rpcUrl, {
     method: 'POST',
     headers: {
       Accept: 'application/json',

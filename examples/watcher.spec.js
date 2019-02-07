@@ -5,7 +5,7 @@ const MKR_WHALE = '0xdb33dfd3d61308c33c63209845dad3e6bfb2c674';
 const MKR_FISH = '0x2dfcedcb401557354d0cf174876ab17bfd6f4efd';
 
 const config = {
-  rpcURL: 'https://kovan.infura.io',
+  rpcUrl: 'https://kovan.infura.io',
   multicallAddress: '0xb2155b4f516a2e93fd0c40fdba57a3ab39952236'
 };
 

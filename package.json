@@ -1,6 +1,6 @@
 {
   "name": "@makerdao/multicall",
-  "version": "0.4.0",
+  "version": "0.5.0-alpha.0",
   "contributors": [
     "Michael Elliot <mike@makerdao.com>",
     "Joshua Levine <joshua@makerdao.com>",
@@ -18,12 +18,14 @@
     "type": "git",
     "url": "https://github.com/makerdao/multicall.js.git"
   },
-  "main": "index.js",
+  "main": "dist/build.umd.js",
+  "module": "dist/build.esm.js",
   "browserslist": "> 0.25%, not dead",
   "files": [
     "src/*",
-    "test*",
-    "index.js",
+    "test/*",
+    "examples/*",
+    "dist/*",
     "LICENSE",
     "README.md",
     "package.json"
@@ -36,7 +38,6 @@
     "precommit": "yarn build"
   },
   "dependencies": {
-    "cross-fetch": "^3.0.0",
     "ethers": "^4.0.6",
     "js-sha3": "^0.8.0"
   },
@@ -55,6 +56,7 @@
     "rollup-plugin-bundle-size": "^1.0.2",
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-json": "^3.1.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-uglify-es": "^0.0.1"
   }

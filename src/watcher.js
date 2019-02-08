@@ -7,15 +7,16 @@ function isNewState(type, value, store) {
   );
 }
 
-export default function createWatcher(defaultModel, config) {
+export default function createWatcher(_defaultModel, _config) {
   const state = {
-    model: defaultModel,
+    model: [..._defaultModel],
+    latestPromiseId: 0,
     store: {},
     latestBlock: null,
     listeners: [],
     handler: null,
     watching: false,
-    config,
+    config: { ..._config },
     id: 0
   };
 
@@ -36,10 +37,14 @@ export default function createWatcher(defaultModel, config) {
 
   function poll() {
     this.state.handler = setTimeout(async () => {
+      this.state.latestPromiseId++;
+      const promiseId = this.state.latestPromiseId;
       const {
         results: { blockNumber, ...data },
         keyToArgMap
-      } = await aggregate(this.state.model, config);
+      } = await aggregate(this.state.model, this.state.config);
+
+      if (this.state.cancelPromiseId === promiseId) return;
 
       if (typeof this.resolveFetchPromise === 'function')
         this.resolveFetchPromise();
@@ -59,7 +64,7 @@ export default function createWatcher(defaultModel, config) {
         alertListeners(events);
         poll.call({ state: this.state });
       }
-    }, this.interval || config.interval || 1000);
+    }, this.interval || this.state.config.interval || 1000);
   }
 
   const watcher = {
@@ -122,6 +127,7 @@ export default function createWatcher(defaultModel, config) {
       state.config = { ...config };
       state.model = [...model];
       state.store = {};
+      state.cancelPromiseId = state.latestPromiseId;
       if (state.watching) {
         let resolveFetchPromise;
         const fetchPromise = new Promise(resolve => {

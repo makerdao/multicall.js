@@ -1,3 +1,4 @@
+import fetch from 'cross-fetch';
 import { defaultAbiCoder } from 'ethers/utils/abi-coder';
 
 export const AGGREGATE_SELECTOR = '0x9af53fc6';

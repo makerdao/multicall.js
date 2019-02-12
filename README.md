@@ -27,11 +27,11 @@ Currently supported data types are: booleans, integers, addresses, fixed-size by
 ## Usage
 
 ```
-import MultiCall from "@makerdao/multicall";
+import Multicall from "@makerdao/multicall";
 
 // "kovan" or "mainnet" presets
 // optionally pass in a specific block you'd like to query (defaults to "latest")
-const multicall = new MultiCall('kovan', { block: 9158211 });
+const multicall = new Multicall('kovan', { block: 9158211 });
 
 
 const { blockNumber, mkrBalance, priceOracleAddress } = await multicall.aggregate([
@@ -93,7 +93,7 @@ yarn
 Finally run the example from the `examples` folder:
 
 ```
-yarn examples
+yarn example
 ```
 
 ## Test

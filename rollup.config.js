@@ -1,14 +1,21 @@
 import json from 'rollup-plugin-json';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
-import uglify from 'rollup-plugin-uglify-es';
 import babel from 'rollup-plugin-babel';
 import bundleSize from 'rollup-plugin-bundle-size';
 import builtins from 'rollup-plugin-node-builtins';
+import autoExternal from 'rollup-plugin-auto-external';
+import cleanup from 'rollup-plugin-cleanup';
+import minify from 'rollup-plugin-babel-minify';
+import globals from 'rollup-plugin-node-globals';
 
 module.exports = [
   {
     input: 'src/index.js',
+    output: {
+      file: 'dist/build.esm.js',
+      format: 'es'
+    },
     plugins: [
       builtins(),
       babel({
@@ -16,23 +23,26 @@ module.exports = [
         exclude: 'node_modules/**'
       }),
       json(),
-      resolve(),
+      autoExternal(),
+      cleanup(),
+      resolve({
+        browser: true
+      }),
       commonjs({
         namedExports: {
           'node_modules/js-sha3/src/sha3.js': ['keccak256']
         }
       }),
       bundleSize(),
-      uglify()
-    ],
-    output: {
-      file: 'dist/build.esm.js',
-      // name: 'multicall',
-      format: 'es'
-    }
+      // minify()
+    ]
   },
   {
     input: 'src/index.js',
+    output: {
+      file: 'dist/build.cjs.js',
+      format: 'cjs'
+    },
     plugins: [
       builtins(),
       babel({
@@ -40,6 +50,8 @@ module.exports = [
         exclude: 'node_modules/**'
       }),
       json(),
+      autoExternal(),
+      cleanup(),
       resolve(),
       commonjs({
         namedExports: {
@@ -47,12 +59,34 @@ module.exports = [
         }
       }),
       bundleSize(),
-      uglify()
-    ],
+      // minify()
+    ]
+  },
+  {
+    input: 'src/index.js',
     output: {
       file: 'dist/build.umd.js',
-      name: 'multicall',
+      name: 'Multicall',
       format: 'umd'
-    }
+    },
+    plugins: [
+      babel({
+        runtimeHelpers: true,
+        exclude: 'node_modules/**'
+      }),
+      json(),
+      cleanup(),
+      resolve({
+        browser: true
+      }),
+      commonjs({
+        namedExports: {
+          'node_modules/js-sha3/src/sha3.js': ['keccak256']
+        }
+      }),
+      globals(),
+      bundleSize(),
+      minify()
+    ]
   }
 ];

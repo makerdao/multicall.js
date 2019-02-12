@@ -1,4 +1,5 @@
-import { createWatcher } from '../src';
+const { createWatcher } = require('../dist/build.cjs.js');
+// console.log(createWatcher)
 
 const MKR_TOKEN = '0xAaF64BFCC32d0F15873a02163e7E500671a4ffcD';
 const MKR_WHALE = '0xdb33dfd3d61308c33c63209845dad3e6bfb2c674';

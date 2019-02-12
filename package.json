@@ -20,7 +20,7 @@
   },
   "main": "dist/build.cjs.js",
   "module": "dist/build.esm.js",
-  "browser": "dist/build.umd.js",
+  "browser": "dist/build.esm.js",
   "browserslist": "> 0.25%, not dead",
   "files": [
     "src/*",

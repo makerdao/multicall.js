@@ -1,6 +1,6 @@
 {
   "name": "@makerdao/multicall",
-  "version": "0.5.1-alpha.5",
+  "version": "0.5.1-alpha.6",
   "contributors": [
     "Michael Elliot <mike@makerdao.com>",
     "Joshua Levine <joshua@makerdao.com>",
@@ -34,7 +34,7 @@
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -w -c",
-    "example": "node_modules/.bin/babel-node examples/watcher.spec.js",
+    "example": "node_modules/.bin/babel-node examples/es-example.js",
     "test": "jest --runInBand --config ./test/jest-config.json",
     "precommit": "yarn build"
   },

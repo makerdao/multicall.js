@@ -21,22 +21,26 @@ const config = {
     config
   );
 
-  watcher.subscribe(events => {
-    console.log(events, 'events');
+  watcher.subscribe(event => {
+    console.log('Event:', event);
+  });
+
+  watcher.onNewBlock(blockNumber => {
+    console.log('New block:', blockNumber);
   });
 
   watcher.batch().subscribe(events => {
-    console.log(events, 'events batched');
+    console.log('Batched events:', events);
   });
 
   watcher.start();
 
   await watcher.awaitInitialFetch();
 
-  console.log('initial fetch');
+  console.log('Initial fetch completed');
 
   setTimeout(() => {
-    console.log('update model');
+    console.log('Updating model');
     const fetchWaiter = watcher.tap(model =>
       model.concat([
         {
@@ -48,12 +52,12 @@ const config = {
     );
 
     fetchWaiter.then(() => {
-      console.log('new model fetch');
+      console.log('Initial fetch after updated model completed');
     });
   }, 5000);
 
   setTimeout(() => {
-    console.log('update config');
+    console.log('Updating config');
     const fetchWaiter = watcher.reCreate(
       [
         {
@@ -66,7 +70,7 @@ const config = {
     );
 
     fetchWaiter.then(() => {
-      console.log('new config fetch');
+      console.log('Initial fetch after new config completed');
     });
   }, 10000);
 })();

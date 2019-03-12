@@ -12,8 +12,9 @@ export default function createWatcher(_defaultModel, _config) {
     model: [..._defaultModel],
     latestPromiseId: 0,
     store: {},
-    latestBlock: null,
+    latestBlockNumber: null,
     listeners: [],
+    newBlockListeners: [],
     handler: null,
     watching: false,
     config: { ..._config },
@@ -26,6 +27,10 @@ export default function createWatcher(_defaultModel, _config) {
 
   function subscribe(listener, id, batch = false) {
     state.listeners.push({ listener, id, batch });
+  }
+
+  function onNewBlockSubscribe(listener, id) {
+    state.newBlockListeners.push({ listener, id });
   }
 
   function alertListeners(events) {
@@ -48,10 +53,23 @@ export default function createWatcher(_defaultModel, _config) {
 
       if (typeof this.resolveFetchPromise === 'function')
         this.resolveFetchPromise();
-
-      if (blockNumber === this.state.latestBlock)
-        poll.call({ state: this.state });
+      if (
+        this.state.latestBlockNumber !== null &&
+        blockNumber < this.state.latestBlockNumber
+      )
+        // Retry immediately if blockNumber is lower than latestBlockNumber
+        poll.call({ state: this.state, interval: 0 });
       else {
+        if (
+          this.state.latestBlockNumber === null ||
+          (this.state.latestBlockNumber !== null &&
+            blockNumber > this.state.latestBlockNumber)
+        ) {
+          state.newBlockListeners.forEach(({ listener }) =>
+            listener(blockNumber)
+          );
+          this.state.latestBlockNumber = blockNumber;
+        }
         const events = Object.entries(data)
           .filter(([type, value]) => isNewState(type, value, this.state.store))
           .map(([type, value]) => ({
@@ -60,7 +78,6 @@ export default function createWatcher(_defaultModel, _config) {
             args: keyToArgMap[type] || []
           }));
         this.state.store = { ...data, keyToArgMap };
-        this.state.blockNumber = blockNumber;
         alertListeners(events);
         poll.call({ state: this.state });
       }
@@ -89,6 +106,17 @@ export default function createWatcher(_defaultModel, _config) {
       return {
         unsub() {
           state.listeners = state.listeners.filter(({ id: _id }) => _id !== id);
+        }
+      };
+    },
+    onNewBlock(listener) {
+      const id = state.id++;
+      onNewBlockSubscribe(listener, id);
+      return {
+        unsub() {
+          state.newBlockListeners = state.newBlockListeners.filter(
+            ({ id: _id }) => _id !== id
+          );
         }
       };
     },

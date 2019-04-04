@@ -10,8 +10,8 @@ function isNewState(type, value, store) {
 export default function createWatcher(_defaultModel, _config) {
   const state = {
     model: [..._defaultModel],
-    latestPromiseId: 0,
     store: {},
+    latestPromiseId: 0,
     latestBlockNumber: null,
     listeners: [],
     newBlockListeners: [],
@@ -41,6 +41,12 @@ export default function createWatcher(_defaultModel, _config) {
   }
 
   function poll() {
+    const interval =
+      this.interval !== undefined
+        ? this.interval
+        : this.state.config.interval !== undefined
+        ? this.state.config.interval
+        : 1000;
     this.state.handler = setTimeout(async () => {
       this.state.latestPromiseId++;
       const promiseId = this.state.latestPromiseId;
@@ -53,6 +59,7 @@ export default function createWatcher(_defaultModel, _config) {
 
       if (typeof this.resolveFetchPromise === 'function')
         this.resolveFetchPromise();
+
       if (
         this.state.latestBlockNumber !== null &&
         blockNumber < this.state.latestBlockNumber
@@ -65,10 +72,10 @@ export default function createWatcher(_defaultModel, _config) {
           (this.state.latestBlockNumber !== null &&
             blockNumber > this.state.latestBlockNumber)
         ) {
+          this.state.latestBlockNumber = blockNumber;
           state.newBlockListeners.forEach(({ listener }) =>
             listener(blockNumber)
           );
-          this.state.latestBlockNumber = blockNumber;
         }
         const events = Object.entries(data)
           .filter(([type, value]) => isNewState(type, value, this.state.store))
@@ -81,7 +88,7 @@ export default function createWatcher(_defaultModel, _config) {
         alertListeners(events);
         poll.call({ state: this.state });
       }
-    }, this.interval || this.state.config.interval || 1000);
+    }, interval);
   }
 
   const watcher = {

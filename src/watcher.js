@@ -151,6 +151,9 @@ export default function createWatcher(_defaultModel, _config) {
       });
       return watcher;
     },
+    startWatch() {
+      return this.start();
+    },
     stop() {
       clearTimeout(state.handler);
       state.handler = null;

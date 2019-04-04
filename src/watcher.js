@@ -149,7 +149,7 @@ export default function createWatcher(_defaultModel, _config) {
       state.handler = null;
       state.watching = false;
     },
-    reCreate(model, config) {
+    recreate(model, config) {
       clearTimeout(state.handler);
       state.handler = null;
       state.config = { ...config };

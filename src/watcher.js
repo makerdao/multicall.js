@@ -1,5 +1,6 @@
 import aggregate from './aggregate';
 import { isEmpty } from './helpers';
+import addresses from './addresses.json';
 
 function isNewState(type, value, store) {
   return (
@@ -7,9 +8,20 @@ function isNewState(type, value, store) {
   );
 }
 
-export default function createWatcher(_defaultModel, _config) {
+function prepareConfig(_config) {
+  const config = { ..._config };
+  if (config.preset !== undefined) {
+    if (addresses[config.preset] !== undefined) {
+      config.multicallAddress = addresses[config.preset].multicall;
+      config.rpcUrl = addresses[config.preset].rpcUrl;
+    } else throw new Error(`Unknown preset ${config.preset}`);
+  }
+  return config;
+}
+
+export default function createWatcher(model, config) {
   const state = {
-    model: [..._defaultModel],
+    model: [...model],
     store: {},
     latestPromiseId: 0,
     latestBlockNumber: null,
@@ -17,7 +29,7 @@ export default function createWatcher(_defaultModel, _config) {
     newBlockListeners: [],
     handler: null,
     watching: false,
-    config: { ..._config },
+    config: prepareConfig(config),
     id: 0
   };
 
@@ -162,9 +174,10 @@ export default function createWatcher(_defaultModel, _config) {
     recreate(model, config) {
       clearTimeout(state.handler);
       state.handler = null;
-      state.config = { ...config };
+      state.config = prepareConfig(config);
       state.model = [...model];
       state.store = {};
+      state.latestBlockNumber = null;
       state.cancelPromiseId = state.latestPromiseId;
       if (state.watching) {
         let resolveFetchPromise;

@@ -1,13 +1,17 @@
 import { createWatcher } from '../src';
 
-const MKR_TOKEN = '0xAaF64BFCC32d0F15873a02163e7E500671a4ffcD';
+const MKR_TOKEN = '0xaaf64bfcc32d0f15873a02163e7e500671a4ffcd';
 const MKR_WHALE = '0xdb33dfd3d61308c33c63209845dad3e6bfb2c674';
 const MKR_FISH = '0x2dfcedcb401557354d0cf174876ab17bfd6f4efd';
 
-const config = {
-  rpcUrl: 'https://kovan.infura.io',
-  multicallAddress: '0xb2155b4f516a2e93fd0c40fdba57a3ab39952236'
-};
+// Preset can be 'mainnet', 'kovan' or 'rinkeby'
+const config = { preset: 'kovan' };
+
+// Alternatively the rpcUrl and multicallAddress can be specified
+// const config = {
+//   rpcUrl: 'https://kovan.infura.io',
+//   multicallAddress: '0xc49ab4d7de648a97592ed3d18720e00356b4a806'
+// };
 
 (async () => {
   const watcher = createWatcher(
@@ -15,22 +19,22 @@ const config = {
       {
         target: MKR_TOKEN,
         call: ['balanceOf(address)(uint256)', MKR_WHALE],
-        returns: [['BALANCE_OF', val => val / 10 ** 18]]
+        returns: [['BALANCE_OF_MKR_WHALE', val => val / 10 ** 18]]
       }
     ],
     config
   );
 
-  watcher.subscribe(event => {
-    console.log('Event:', event);
+  watcher.subscribe(update => {
+    console.log(`Update: ${update.type} = ${update.value}`);
+  });
+
+  watcher.batch().subscribe(updates => {
+    // Handle batched updates here
   });
 
   watcher.onNewBlock(blockNumber => {
     console.log('New block:', blockNumber);
-  });
-
-  watcher.batch().subscribe(events => {
-    console.log('Batched events:', events);
   });
 
   watcher.start();
@@ -40,37 +44,34 @@ const config = {
   console.log('Initial fetch completed');
 
   setTimeout(() => {
-    console.log('Updating model');
-    const fetchWaiter = watcher.tap(model =>
-      model.concat([
-        {
-          target: MKR_TOKEN,
-          call: ['balanceOf(address)(uint256)', MKR_FISH],
-          returns: [['BALANCE_OF', val => val / 10 ** 18]]
-        }
-      ])
-    );
-
+    console.log('Updating calls...');
+    const fetchWaiter = watcher.tap(calls => [
+      ...calls,
+      {
+        target: MKR_TOKEN,
+        call: ['balanceOf(address)(uint256)', MKR_FISH],
+        returns: [['BALANCE_OF_MKR_FISH', val => val / 10 ** 18]]
+      }
+    ]);
     fetchWaiter.then(() => {
-      console.log('Initial fetch after updated model completed');
+      console.log('Initial fetch completed');
     });
   }, 5000);
 
   setTimeout(() => {
-    console.log('Updating config');
-    const fetchWaiter = watcher.reCreate(
+    console.log('Recreating with new calls and config...');
+    const fetchWaiter = watcher.recreate(
       [
         {
           target: MKR_TOKEN,
           call: ['balanceOf(address)(uint256)', MKR_WHALE],
-          returns: [['BALANCE_OF', val => val / 10 ** 18]]
+          returns: [['BALANCE_OF_MKR_WHALE', val => val / 10 ** 18]]
         }
       ],
       config
     );
-
     fetchWaiter.then(() => {
-      console.log('Initial fetch after new config completed');
+      console.log('Initial fetch completed');
     });
   }, 10000);
 })();

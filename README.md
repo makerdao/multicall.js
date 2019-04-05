@@ -2,97 +2,129 @@
 
 [![npm version](https://img.shields.io/npm/v/@makerdao/multicall.svg?style=flat-square)](https://www.npmjs.com/package/@makerdao/multicall)
 
-## Installation
-
-```
-yarn add @makerdao/multicall
-
-or
-
-npm install @makerdao/multicall
-```
-
 **Multicall.js** is a lightweight JavaScript library for interacting with the [multicall](https://github.com/makerdao/multicall) smart contract.
 
-Multicall allows multiple view calls to be grouped into a single call and the results aggregated into a single result from the multicall contract. This reduces the number of separate JSON RPC requests that need to be sent over the network if using a remote node like Infura, and the assurance that all values returned are from the same block. (The latest block number is returned along with the aggregated results).
-
-Currently supported data types are: booleans, integers, addresses, fixed-size byte arrays (e.g. bytes32)
+Multicall allows multiple smart contract constant function calls to be grouped into a single call and the results aggregated into a single result. This reduces the number of separate JSON RPC requests that need to be sent over the network if using a remote node like Infura, and provides the guarantee that all values returned are from the same block. The latest block number is also returned along with the aggregated results.
 
 ## Summary
 
-- Get the return value from different smart contract function calls in a single call
-- Assurance that all values are from the same block number / block height
-- Compare the returned block number against the previous call's block number to know if it's possible for any returned values to be different (i.e. for polling)
+- Get the return value(s) of multiple smart contract function calls in a single call
+- Guarantee that all values are from the same block
+- Use watchers to poll for multiple blockchain state variables/functions
+- Get updates when a watcher detects state has changed
+- Results from out of sync nodes are automatically ignored
+- Get new block updates
+
+## Installation
+
+```bash
+yarn add @makerdao/multicall
+```
 
 ## Usage
 
-```
-import Multicall from "@makerdao/multicall";
+```javascript
+import { createWatcher } from '@makerdao/multicall';
 
-// "kovan" or "mainnet" presets
-// optionally pass in a specific block you'd like to query (defaults to "latest")
-const multicall = new Multicall('kovan', { block: 9158211 });
+// Contract addresses used in this example
+const MKR_TOKEN = '0xaaf64bfcc32d0f15873a02163e7e500671a4ffcd';
+const MKR_WHALE = '0xdb33dfd3d61308c33c63209845dad3e6bfb2c674';
+const MKR_FISH = '0x2dfcedcb401557354d0cf174876ab17bfd6f4efd';
 
+// Preset can be 'mainnet', 'kovan' or 'rinkeby'
+const config = { preset: 'kovan' };
 
-const { blockNumber, mkrBalance, priceOracleAddress } = await multicall.aggregate([
+// Create watcher
+const watcher = createWatcher(
+  [
     {
-        to: '0xAaF64BFCC32d0F15873a02163e7E500671a4ffcD',
-        method: 'balanceOf(address)',
-        args:  [['0x72776bb917751225d24c07d0663b3780b2ada67c', 'address']],
-        returns: [['mkrBalance', 'uint256']]
-    },
-    {
-        to: '0xa71937147b55Deb8a530C7229C442Fd3F31b7db2',
-        method: 'pip()',
-        returns: [['priceFeed', 'address']]
-    },
+      target: MKR_TOKEN,
+      call: ['balanceOf(address)(uint256)', MKR_WHALE],
+      returns: [['BALANCE_OF_MKR_WHALE', val => val / 10 ** 18]]
+    }
+  ],
+  config
+);
 
-    // ... etc, many more value reads are possible w/ this request
-
-]); // all of these values are fetched within a single call
-
-
- -- or --
-
-multicall.aggregate([
-    {
-        to: '0xAaF64BFCC32d0F15873a02163e7E500671a4ffcD',
-        method: 'balanceOf(address)',
-        args:  [['0x72776bb917751225d24c07d0663b3780b2ada67c', 'address']],
-        returns: [['mkrBalance', 'uint256']]
-    },
-    {
-        to: '0xa71937147b55Deb8a530C7229C442Fd3F31b7db2',
-        method: 'pip()',
-        returns: [['priceFeed', 'address']]
-    },
-
-    // ... etc, many more value reads are possible w/ this request
-
-]).then(({ blockNumber, mkrBalance, priceOracleAddress }) => {
-
-    // all of these values are fetched within a single call
-
+// Subscribe to state updates
+watcher.subscribe(update => {
+console.log(`Update: ${update.type} = ${update.value}`);
 });
+
+// Subscribe to batched state updates
+watcher.batch().subscribe(updates => {
+  // Handle batched updates here
+});
+
+// Subscribe to new block number updates
+watcher.onNewBlock(blockNumber => {
+  console.log('New block:', blockNumber);
+});
+
+// Start the watcher polling
+watcher.start();
+```
+
+```javascript
+// The JSON RPC URL and multicall contract address can also be specified in the config:
+const config = {
+  rpcUrl: 'https://kovan.infura.io',
+  multicallAddress: '0xc49ab4d7de648a97592ed3d18720e00356b4a806'
+};
+```
+
+```javascript
+// Update the watcher calls using tap()
+const fetchWaiter = watcher.tap(calls => [
+  // Pass back existing calls...
+  ...calls,
+  // ...plus new calls
+  {
+    target: MKR_TOKEN,
+    call: ['balanceOf(address)(uint256)', MKR_FISH],
+    returns: [['BALANCE_OF_MKR_FISH', val => val / 10 ** 18]]
+  }
+]);
+// This promise resolves when the first fetch completes
+fetchWaiter.then(() => {
+  console.log('Initial fetch completed');
+});
+```
+
+```javascript
+// Recreate the watcher with new calls and config (allowing the network to be changed)
+const config = { preset: 'mainnet' };
+watcher.recreate(
+  [
+    {
+      target: MKR_TOKEN,
+      call: ['balanceOf(address)(uint256)', MKR_WHALE],
+      returns: [['BALANCE_OF_MKR_WHALE', val => val / 10 ** 18]]
+    }
+  ],
+  config
+);
 ```
 
 ## Examples
 
-First, clone this Repo
+Check out this [CodePen example](https://codepen.io/michaelelliot/pen/MxEpNX?editors=0010) for a working front-end example.
 
-```
+To run the example in the project, first clone this repo:
+
+```bash
 git clone https://github.com/makerdao/multicall.js
 ```
 
-Then use `npm` or `yarn` to install the dependencies:
+Then install the dependencies:
 
-```
+```bash
 yarn
 ```
 
-Finally run the example from the `examples` folder:
+Finally run the example script (`examples/es-example.js`):
 
-```
+```bash
 yarn example
 ```
 
@@ -100,6 +132,6 @@ yarn example
 
 To run tests use:
 
-```
+```bash
 yarn test
 ```

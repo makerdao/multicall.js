@@ -1,16 +1,18 @@
 {
   "name": "@makerdao/multicall",
   "version": "0.5.1-alpha.7",
+  "description": "A blockchain state management library for dapps.",
   "contributors": [
     "Michael Elliot <mike@makerdao.com>",
     "Joshua Levine <joshua@makerdao.com>",
     "Lawrence Wang <lawrence@makerdao.com>"
   ],
-  "description": "JavaScript library for interacting with the multicall smart contract.",
   "license": "MIT",
   "keywords": [
-    "multicall"
+    "multicall",
+    "makerdao"
   ],
+  "homepage": "https://github.com/makerdao/multicall.js#readme",
   "bugs": {
     "url": "https://github.com/makerdao/multicall.js/issues"
   },

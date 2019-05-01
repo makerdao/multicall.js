@@ -13,5 +13,10 @@
     "multicall": "0x67482a4499dbef2a65862d751a7ef2b4a0785475",
     "helper": "0x12a3f008055dc55fe9197ba13d4f10101a71b591",
     "rpcUrl": "https://rinkeby.infura.io"
+  },
+  "goerli": {
+    "multicall": "0x7160bde5f1c98d9839b86fa6730ec398434643c6",
+    "helper": "0xc894122faa9a448acb5b3e98ed57c57bfba6daac",
+    "rpcUrl": "https://rpc.slock.it/goerli"
   }
 }

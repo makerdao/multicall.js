@@ -31,7 +31,7 @@ const MKR_TOKEN = '0xaaf64bfcc32d0f15873a02163e7e500671a4ffcd';
 const MKR_WHALE = '0xdb33dfd3d61308c33c63209845dad3e6bfb2c674';
 const MKR_FISH = '0x2dfcedcb401557354d0cf174876ab17bfd6f4efd';
 
-// Preset can be 'mainnet', 'kovan' or 'rinkeby'
+// Preset can be 'mainnet', 'kovan', 'rinkeby' or 'goerli'
 const config = { preset: 'kovan' };
 
 // Create watcher

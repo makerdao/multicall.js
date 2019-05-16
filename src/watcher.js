@@ -23,6 +23,7 @@ export default function createWatcher(model, config) {
   const state = {
     model: [...model],
     store: {},
+    keyToArgMap: {},
     latestPromiseId: 0,
     latestBlockNumber: null,
     listeners: [],
@@ -38,10 +39,19 @@ export default function createWatcher(model, config) {
   });
 
   function subscribe(listener, id, batch = false) {
+    if (!isEmpty(state.store)) {
+      const events = Object.entries(state.store).map(([type, value]) => ({
+        type,
+        value,
+        args: state.keyToArgMap[type] || []
+      }));
+      batch ? listener(events) : events.forEach(listener);
+    }
     state.listeners.push({ listener, id, batch });
   }
 
   function onNewBlockSubscribe(listener, id) {
+    state.latestBlockNumber && listener(state.latestBlockNumber);
     state.newBlockListeners.push({ listener, id });
   }
 
@@ -75,10 +85,10 @@ export default function createWatcher(model, config) {
       if (
         this.state.latestBlockNumber !== null &&
         blockNumber < this.state.latestBlockNumber
-      )
+      ) {
         // Retry immediately if blockNumber is lower than latestBlockNumber
         poll.call({ state: this.state, interval: 0 });
-      else {
+      } else {
         if (
           this.state.latestBlockNumber === null ||
           (this.state.latestBlockNumber !== null &&
@@ -96,7 +106,8 @@ export default function createWatcher(model, config) {
             value,
             args: keyToArgMap[type] || []
           }));
-        this.state.store = { ...data, keyToArgMap };
+        this.state.store = { ...data };
+        this.state.keyToArgMap = { ...keyToArgMap };
         alertListeners(events);
         poll.call({ state: this.state });
       }

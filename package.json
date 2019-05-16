@@ -38,7 +38,9 @@
     "watch": "rollup -w -c",
     "example": "node_modules/.bin/babel-node examples/es-example.js",
     "test": "jest --runInBand --config ./test/jest-config.json",
-    "precommit": "yarn build"
+    "precommit": "yarn build",
+    "preversion": "yarn test && yarn build",
+    "postversion": "git push --tags && yarn publish . --tag $npm_package_version && git push && echo \"Successfully released version $npm_package_version!\""
   },
   "dependencies": {
     "cross-fetch": "^3.0.1",

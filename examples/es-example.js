@@ -4,7 +4,7 @@ const MKR_TOKEN = '0xaaf64bfcc32d0f15873a02163e7e500671a4ffcd';
 const MKR_WHALE = '0xdb33dfd3d61308c33c63209845dad3e6bfb2c674';
 const MKR_FISH = '0x2dfcedcb401557354d0cf174876ab17bfd6f4efd';
 
-// Preset can be 'mainnet', 'kovan' or 'rinkeby'
+// Preset can be 'mainnet', 'kovan', 'rinkeby' or 'goerli'
 const config = { preset: 'kovan' };
 
 // Alternatively the rpcUrl and multicallAddress can be specified
@@ -34,7 +34,7 @@ const config = { preset: 'kovan' };
   });
 
   watcher.onNewBlock(blockNumber => {
-    console.log('New block:', blockNumber);
+    console.log(`New block: ${blockNumber}`);
   });
 
   watcher.start();
@@ -43,6 +43,7 @@ const config = { preset: 'kovan' };
 
   console.log('Initial fetch completed');
 
+  // Update the calls
   setTimeout(() => {
     console.log('Updating calls...');
     const fetchWaiter = watcher.tap(calls => [
@@ -58,6 +59,7 @@ const config = { preset: 'kovan' };
     });
   }, 5000);
 
+  // Recreate watcher (useful if network has changed)
   setTimeout(() => {
     console.log('Recreating with new calls and config...');
     const fetchWaiter = watcher.recreate(
@@ -74,6 +76,18 @@ const config = { preset: 'kovan' };
       console.log('Initial fetch completed');
     });
   }, 10000);
+
+  // When subscribing to state updates, previously cached values will be returned immediately
+  setTimeout(() => {
+    console.log('Subscribing to updates much later (will immediately return cached values)');
+    watcher.subscribe(update => {
+      console.log(`Update (2nd subscription): ${update.type} = ${update.value}`);
+    });
+    watcher.onNewBlock(blockNumber => {
+      console.log(`New block (2nd subscription): ${blockNumber}`);
+    });
+  }, 15000);
+
 })();
 
 (async () => {

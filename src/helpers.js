@@ -1,7 +1,8 @@
 import fetch from 'cross-fetch';
 import { defaultAbiCoder } from 'ethers/utils/abi-coder';
 
-export const AGGREGATE_SELECTOR = '0x9af53fc6';
+// Function signature for: aggregate((address,bytes)[])
+export const AGGREGATE_SELECTOR = '0x252dba42';
 
 export function strip0x(str) {
   return str.replace(/^0x/, '');
@@ -49,26 +50,13 @@ export function padRight(string, chars, sign) {
   );
 }
 
-function formatInputBytes(rawData) {
-  const bytesLength = padLeft((rawData.length / 2).toString(16), 64);
-  const location = padLeft('20', 64);
-  let result = location + bytesLength + rawData;
-  var l = Math.floor((result.length + 63) / 64);
-  result = padRight(result, l * 64);
-  return AGGREGATE_SELECTOR + result;
-}
-
-function stripWords(bytes, numWords) {
-  return '0x' + strip0x(bytes).substr(64 * numWords);
-}
-
 export function isEmpty(obj) {
   if (Array.isArray(obj)) return obj.length === 0;
   return !obj || Object.keys(obj).length === 0;
 }
 
 export async function ethCall(rawData, { rpcUrl, block, multicallAddress }) {
-  const abiEncodedData = formatInputBytes(strip0x(rawData));
+  const abiEncodedData = AGGREGATE_SELECTOR + strip0x(rawData);
   const rawResponse = await fetch(rpcUrl, {
     method: 'POST',
     headers: {
@@ -89,5 +77,5 @@ export async function ethCall(rawData, { rpcUrl, block, multicallAddress }) {
     })
   });
   const content = await rawResponse.json();
-  return stripWords(content.result, 2);
+  return content.result;
 }

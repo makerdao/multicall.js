@@ -2,44 +2,43 @@ import { keccak256 } from 'js-sha3';
 import invariant from 'invariant';
 import {
   strip0x,
-  typesLength,
-  padLeft,
   ethCall,
-  encodeParameter,
   encodeParameters,
-  decodeParameter,
   decodeParameters
 } from './helpers.js';
+import memoize from 'lodash/memoize';
 
 // regex -----------------------------------
 const INSIDE_EVERY_PARENTHESES = /\(.*?\)/g;
 const FIRST_CLOSING_PARENTHESES = /^[^)]*\)/;
 
-export function _makeMulticallData(calls, keepAsArray) {
-  let totalReturnsLength = 0;
-  const components = calls.reduce(
-    (acc, { target, method, args, returnTypes }) => {
-      const returnsLength = typesLength(returnTypes);
-      totalReturnsLength += returnsLength;
-      if (!args) args = [];
-      return acc.concat(
-        [
-          encodeParameter('address', target),
-          padLeft(returnsLength, 64),
-          padLeft('40', 64),
-          padLeft((args.length * 32 + 4).toString(16), 64),
-          keccak256(method).substr(0, 8),
-          encodeParameters(args.map(a => a[1]), args.map(a => a[0]))
-        ]
-          .map(v => (v ? strip0x(v) : null))
-          .filter(v => !!v)
-      );
-    },
-    []
+export function _makeMulticallData(calls) {
+  const values = [
+    calls.map(({ target, method, args, returnTypes }) => [
+      target,
+      '0x' +
+        keccak256(method).substr(0, 8) +
+        (args && args.length > 0
+          ? strip0x(encodeParameters(args.map(a => a[1]), args.map(a => a[0])))
+          : '')
+    ])
+  ];
+  const calldata = encodeParameters(
+    [
+      {
+        components: [{ type: 'address' }, { type: 'bytes' }],
+        name: 'data',
+        type: 'tuple[]'
+      }
+    ],
+    values
   );
-  components.unshift(strip0x(padLeft(totalReturnsLength, 64)));
-  return keepAsArray ? components : '0x' + components.join('');
+  return calldata;
 }
+
+const makeMulticallData = memoize(_makeMulticallData, (...args) =>
+  JSON.stringify(args)
+);
 
 export default async function aggregate(calls, config) {
   calls = Array.isArray(calls) ? calls : [calls];
@@ -56,6 +55,7 @@ export default async function aggregate(calls, config) {
   }, {});
 
   calls = calls.map(({ call, target, returns }) => {
+    if (!target) target = config.multicallAddress;
     const [method, ...argValues] = call;
     const [argTypesString, returnTypesString] = method
       .match(INSIDE_EVERY_PARENTHESES)
@@ -79,12 +79,8 @@ export default async function aggregate(calls, config) {
     };
   });
 
-  const callDataBytes = _makeMulticallData(calls, false);
-  const result = await ethCall(callDataBytes, config);
-  const blockNumber = decodeParameter(
-    'uint256',
-    result.slice(0, 66)
-  )[0].toNumber();
+  const callDataBytes = makeMulticallData(calls, false);
+  const outerResults = await ethCall(callDataBytes, config);
   const returnTypeArray = calls
     .map(({ returnTypes }) => returnTypes)
     .reduce((acc, ele) => acc.concat(ele), []);
@@ -97,14 +93,24 @@ export default async function aggregate(calls, config) {
     'Missing data needed to parse results'
   );
 
-  const parsedVals = decodeParameters(
-    returnTypeArray,
-    '0x' + result.slice(67)
-  ).map(type => {
-    if (type.toString() === 'true') return true;
-    if (type.toString() === 'false') return false;
-    return type.toString();
-  });
+  const outerResultsDecoded = decodeParameters(
+    ['uint256', 'bytes[]'],
+    outerResults
+  );
+  const blockNumber = outerResultsDecoded.shift();
+  const parsedVals = outerResultsDecoded.reduce((acc, r) => {
+    r.map((results, idx) => {
+      const types = calls[idx].returnTypes;
+      const resultsDecoded = decodeParameters(types, results);
+      acc.push(
+        ...resultsDecoded.map((r, idx) => {
+          if (types[idx] === 'bool') return r.toString() === 'true';
+          return r;
+        })
+      );
+    });
+    return acc;
+  }, []);
 
   const retObj = { blockNumber };
 

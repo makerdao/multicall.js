@@ -89,5 +89,10 @@ export async function ethCall(rawData, { rpcUrl, block, multicallAddress }) {
     })
   });
   const content = await rawResponse.json();
+  if (!content || !content.result) {
+    throw new Error(
+      'Multicall received an empty response. Check your call configuration for errors.'
+    );
+  }
   return stripWords(content.result, 2);
 }

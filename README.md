@@ -54,6 +54,8 @@ console.log(`Update: ${update.type} = ${update.value}`);
 // Subscribe to batched state updates
 watcher.batch().subscribe(updates => {
   // Handle batched updates here
+  // Updates are returned as { type, value } objects, e.g:
+  // { type: 'BALANCE_OF_MKR_WHALE', value: 70000 }
 });
 
 // Subscribe to new block number updates

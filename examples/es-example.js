@@ -5,13 +5,13 @@ const MKR_WHALE = '0xdb33dfd3d61308c33c63209845dad3e6bfb2c674';
 const MKR_FISH = '0x2dfcedcb401557354d0cf174876ab17bfd6f4efd';
 const PRICE_FEED_ETH = '0xa5aA4e07F5255E14F02B385b1f04b35cC50bdb66';
 
-// Preset can be 'mainnet', 'kovan', 'rinkeby' or 'goerli'
+// Preset can be 'mainnet', 'kovan', 'rinkeby', 'goerli' or 'xdai'
 const config = { preset: 'kovan' };
 
-// Alternatively the rpcUrl and multicallAddress can be specified
+// Alternatively the rpcUrl and multicallAddress can be specified manually
 // const config = {
 //   rpcUrl: 'https://kovan.infura.io',
-//   multicallAddress: '0x695f5af1c648271c8508319e135ff7303e703442'
+//   multicallAddress: '0x2cc8688c5f75e365aaeeb4ea8d6a480405a48d2a'
 // };
 
 (async () => {

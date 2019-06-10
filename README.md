@@ -31,7 +31,7 @@ const MKR_TOKEN = '0xaaf64bfcc32d0f15873a02163e7e500671a4ffcd';
 const MKR_WHALE = '0xdb33dfd3d61308c33c63209845dad3e6bfb2c674';
 const MKR_FISH = '0x2dfcedcb401557354d0cf174876ab17bfd6f4efd';
 
-// Preset can be 'mainnet', 'kovan', 'rinkeby' or 'goerli'
+// Preset can be 'mainnet', 'kovan', 'rinkeby', 'goerli' or 'xdai'
 const config = { preset: 'kovan' };
 
 // Create watcher
@@ -103,6 +103,48 @@ watcher.recreate(
     }
   ],
   config
+);
+```
+
+## Helper Functions
+Special variables and functions (e.g. `addr.balance`, `block.blockhash`, `block.timestamp`) can be accessed by calling their corresponding helper function.
+To call these helper functions simply omit the `target` property (and it will default to multicall's contract address).
+```javascript
+const watcher = createWatcher(
+  [
+    {
+      call: [
+        'getEthBalance(address)(uint256)', 
+        '0x72776bb917751225d24c07d0663b3780b2ada67c'
+      ],
+      returns: [['ETH_BALANCE', val => val / 10 ** 18]]
+    },
+    {
+      call: ['getBlockHash(uint256)(bytes32)', 11482494],
+      returns: [['SPECIFIC_BLOCK_HASH_0xFF4DB']]
+    },
+    {
+      call: ['getLastBlockHash()(bytes32)'],
+      returns: [['LAST_BLOCK_HASH']]
+    },
+    {
+      call: ['getCurrentBlockTimestamp()(uint256)'],
+      returns: [['CURRENT_BLOCK_TIMESTAMP']]
+    },
+    {
+      call: ['getCurrentBlockDifficulty()(uint256)'],
+      returns: [['CURRENT_BLOCK_DIFFICULTY']]
+    },
+    {
+      call: ['getCurrentBlockGasLimit()(uint256)'],
+      returns: [['CURRENT_BLOCK_GASLIMIT']]
+    },
+    {
+      call: ['getCurrentBlockCoinbase()(address)'],
+      returns: [['CURRENT_BLOCK_COINBASE']]
+    }
+  ],
+  { preset: 'kovan' }
 );
 ```
 

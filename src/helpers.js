@@ -58,7 +58,7 @@ export function isEmpty(obj) {
 export async function ethCall(rawData, { web3, rpcUrl, block, multicallAddress }) {
   const abiEncodedData = AGGREGATE_SELECTOR + strip0x(rawData);
   if (web3 !== undefined) {
-    return await web3.eth.call({
+    return web3.eth.call({
       to: multicallAddress,
       data: abiEncodedData
     });

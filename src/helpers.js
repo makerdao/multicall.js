@@ -55,32 +55,37 @@ export function isEmpty(obj) {
   return !obj || Object.keys(obj).length === 0;
 }
 
-export async function ethCall(rawData, { rpcUrl, block, multicallAddress }) {
+export async function ethCall(rawData, { web3, rpcUrl, block, multicallAddress }) {
   const abiEncodedData = AGGREGATE_SELECTOR + strip0x(rawData);
-  const rawResponse = await fetch(rpcUrl, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      method: 'eth_call',
-      params: [
-        {
-          to: multicallAddress,
-          data: abiEncodedData
-        },
-        block || 'latest'
-      ],
-      id: 1
-    })
-  });
-  const content = await rawResponse.json();
-  if (!content || !content.result) {
-    throw new Error(
-      'Multicall received an empty response. Check your call configuration for errors.'
-    );
+  if (web3 !== undefined) {
+    return await web3.eth.call({
+      to: multicallAddress,
+      data: abiEncodedData
+    });
+  } else {
+    const rawResponse = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'eth_call',
+        params: [
+          {
+            to: multicallAddress,
+            data: abiEncodedData
+          },
+          block || 'latest'
+        ],
+        id: 1
+      })
+    });
+    const content = await rawResponse.json();
+    if (!content || !content.result) {
+      throw new Error('Multicall received an empty response. Check your call configuration for errors.');
+    }
+    return content.result;
   }
-  return content.result;
 }

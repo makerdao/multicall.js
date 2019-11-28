@@ -34,8 +34,9 @@
     "package.json"
   ],
   "scripts": {
-    "build": "rollup -c",
-    "watch": "rollup -w -c",
+    "clean": "rm -rf dist",
+    "build": "yarn clean && rollup -c",
+    "watch": "yarn clean && rollup -w -c",
     "example": "node_modules/.bin/babel-node examples/es-example.js",
     "test": "jest --runInBand --config ./test/jest-config.json",
     "prepublish": "yarn test && yarn build"

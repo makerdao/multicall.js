@@ -8,8 +8,12 @@ function isNewState(type, value, store) {
   );
 }
 
-function prepareConfig(_config) {
-  const config = { ..._config };
+function prepareConfig(config) {
+  config = {
+    interval: 1000,
+    staleBlockRetryWait: 1000,
+    ...config
+  };
   if (config.preset !== undefined) {
     if (addresses[config.preset] !== undefined) {
       config.multicallAddress = addresses[config.preset].multicall;
@@ -59,16 +63,13 @@ export default function createWatcher(model, config) {
   }
 
   function poll() {
-    const interval =
-      this.interval !== undefined
-        ? this.interval
-        : this.state.config.interval !== undefined
-        ? this.state.config.interval
-        : 1000;
+    const interval = this.interval !== undefined ? this.interval : this.state.config.interval;
     this.state.handler = setTimeout(async () => {
       this.state.latestPromiseId++;
       const promiseId = this.state.latestPromiseId;
-      state.onPollListeners.forEach(({ listener }) => listener(promiseId));
+      state.onPollListeners.forEach(({ listener }) =>
+        listener({ id: promiseId, latestBlockNumber: this.state.latestBlockNumber })
+      );
       const {
         results: { blockNumber, ...data },
         keyToArgMap
@@ -83,8 +84,8 @@ export default function createWatcher(model, config) {
         this.state.latestBlockNumber !== null &&
         blockNumber < this.state.latestBlockNumber
       ) {
-        // Retry immediately if blockNumber is lower than latestBlockNumber
-        poll.call({ state: this.state, interval: 0 });
+        // Retry if blockNumber is lower than latestBlockNumber
+        poll.call({ state: this.state, interval: this.state.config.staleBlockRetryWait });
       } else {
         if (
           this.state.latestBlockNumber === null ||

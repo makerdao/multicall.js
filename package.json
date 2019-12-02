@@ -1,6 +1,6 @@
 {
   "name": "@makerdao/multicall",
-  "version": "0.8.0",
+  "version": "0.9.0-rc.1",
   "description": "A blockchain state management library for dapps.",
   "contributors": [
     "Michael Elliot <mike@makerdao.com>",
@@ -34,8 +34,9 @@
     "package.json"
   ],
   "scripts": {
-    "build": "rollup -c",
-    "watch": "rollup -w -c",
+    "clean": "rm -rf dist",
+    "build": "yarn clean && rollup -c",
+    "watch": "yarn clean && rollup -w -c",
     "example": "node_modules/.bin/babel-node examples/es-example.js",
     "test": "jest --runInBand --config ./test/jest-config.json",
     "prepublish": "yarn test && yarn build"

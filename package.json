@@ -37,15 +37,17 @@
     "clean": "rm -rf dist",
     "build": "yarn clean && rollup -c",
     "watch": "yarn clean && rollup -w -c",
-    "example": "node_modules/.bin/babel-node examples/es-example.js",
+    "example": "DEBUG=multicall node_modules/.bin/babel-node examples/es-example.js",
     "test": "jest --runInBand --config ./test/jest-config.json",
     "prepublish": "yarn test && yarn build"
   },
   "dependencies": {
     "cross-fetch": "^3.0.1",
+    "debug": "^4.1.1",
     "ethers": "^4.0.27",
     "js-sha3": "^0.8.0",
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.11",
+    "ws": "^7.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",

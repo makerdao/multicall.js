@@ -1,5 +1,7 @@
 import fetch from 'cross-fetch';
 import { defaultAbiCoder } from 'ethers/utils/abi-coder';
+import debug from 'debug';
+const log = debug('multicall');
 
 // Function signature for: aggregate((address,bytes)[])
 export const AGGREGATE_SELECTOR = '0x252dba42';
@@ -55,14 +57,48 @@ export function isEmpty(obj) {
   return !obj || Object.keys(obj).length === 0;
 }
 
-export async function ethCall(rawData, { web3, rpcUrl, block, multicallAddress }) {
+export async function ethCall(rawData, { id, web3, rpcUrl, block, multicallAddress, ws, wsResponseTimeout }) {
   const abiEncodedData = AGGREGATE_SELECTOR + strip0x(rawData);
-  if (web3 !== undefined) {
+  if (ws !== undefined) {
+    log('Sending via WebSocket');
+    return new Promise((resolve, reject) => {
+      ws.send(JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'eth_call',
+        params: [
+          {
+            to: multicallAddress,
+            data: abiEncodedData
+          },
+          block || 'latest'
+        ],
+        id
+      }));
+
+      const timeoutHandle = setTimeout(() => {
+        ws.removeListener('message', onMessage);
+        reject(new Error('WebSocket response timeout'));
+      }, wsResponseTimeout);
+
+      function onMessage(data) {
+        const json = JSON.parse(data);
+        if (!json.id || json.id !== id) return;
+        log('WebSocket response id', json.id);
+        clearTimeout(timeoutHandle);
+        ws.removeListener('message', onMessage);
+        resolve(json.result);
+      }
+      ws.on('message', onMessage);
+    });
+  }
+  else if (web3 !== undefined) {
+    log('Sending via web3 provider');
     return web3.eth.call({
       to: multicallAddress,
       data: abiEncodedData
     });
   } else {
+    log('Sending via XHR fetch');
     const rawResponse = await fetch(rpcUrl, {
       method: 'POST',
       headers: {

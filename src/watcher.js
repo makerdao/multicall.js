@@ -5,6 +5,8 @@ import addresses from './addresses.json';
 import debug from 'debug';
 const log = debug('multicall');
 
+const reWsEndpoint = /^wss?:\/\//i;
+
 function isNewState(type, value, store) {
   return (
     store[type] === undefined || store[type].toString() !== value.toString()
@@ -58,7 +60,7 @@ export default function createWatcher(model, config) {
   }
 
   function setupWebSocket() {
-    if (state.config.rpcUrl.substr(0, 6) === 'wss://') {
+    if (reWsEndpoint.test(state.config.rpcUrl)) {
       log(`Connecting to WebSocket ${state.config.rpcUrl}...`);
       state.ws = new WebSocket(state.config.rpcUrl);
       state.ws.on('open', () => {
@@ -78,7 +80,7 @@ export default function createWatcher(model, config) {
         reconnectWebSocket(state.config.wsReconnectTimeout);
       });
       state.ws.on('error', err => {
-        error('WebSocket error:', err);
+        log('WebSocket error:', err);
         log(`Reconnecting in ${state.config.wsReconnectTimeout / 1000} seconds.`);
         reconnectWebSocket(state.config.wsReconnectTimeout);
       });
@@ -164,7 +166,7 @@ export default function createWatcher(model, config) {
           ) {
             this.state.latestBlockNumber = parseInt(blockNumber);
             state.onNewBlockListeners.forEach(({ listener }) =>
-              listener(blockNumber)
+              listener(this.state.latestBlockNumber)
             );
           }
           const events = Object.entries(data)

@@ -1,4 +1,4 @@
-import fetch from 'cross-fetch';
+import 'cross-fetch/polyfill';
 import { defaultAbiCoder } from 'ethers/utils/abi-coder';
 import debug from 'debug';
 const log = debug('multicall');
@@ -59,7 +59,7 @@ export function isEmpty(obj) {
 
 export async function ethCall(rawData, { id, web3, rpcUrl, block, multicallAddress, ws, wsResponseTimeout }) {
   const abiEncodedData = AGGREGATE_SELECTOR + strip0x(rawData);
-  if (ws !== undefined) {
+  if (ws) {
     log('Sending via WebSocket');
     return new Promise((resolve, reject) => {
       ws.send(JSON.stringify({
@@ -81,6 +81,7 @@ export async function ethCall(rawData, { id, web3, rpcUrl, block, multicallAddre
       }, wsResponseTimeout);
 
       function onMessage(data) {
+        if (typeof data !== 'string') data = data.data;
         const json = JSON.parse(data);
         if (!json.id || json.id !== id) return;
         log('WebSocket response id', json.id);
@@ -91,7 +92,7 @@ export async function ethCall(rawData, { id, web3, rpcUrl, block, multicallAddre
       ws.on('message', onMessage);
     });
   }
-  else if (web3 !== undefined) {
+  else if (web3) {
     log('Sending via web3 provider');
     return web3.eth.call({
       to: multicallAddress,

@@ -84,11 +84,6 @@ export default function createWatcher(model, config) {
         log(`Reconnecting in ${state.config.wsReconnectTimeout / 1000} seconds.`);
         reconnectWebSocket(state.config.wsReconnectTimeout);
       });
-      // Test websocket disconnection
-      setTimeout(function() {
-        log('Forcing disconnect');
-        state.ws.close();
-      }, 10000);
     }
   }
 

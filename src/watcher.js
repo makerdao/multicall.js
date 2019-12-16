@@ -1,4 +1,4 @@
-import WebSocket from 'ws';
+import WebSocket from 'isomorphic-ws';
 import aggregate from './aggregate';
 import { isEmpty } from './helpers';
 import addresses from './addresses.json';
@@ -8,9 +8,7 @@ const log = debug('multicall');
 const reWsEndpoint = /^wss?:\/\//i;
 
 function isNewState(type, value, store) {
-  return (
-    store[type] === undefined || store[type].toString() !== value.toString()
-  );
+  return store[type] === undefined || store[type].toString() !== value.toString();
 }
 
 function prepareConfig(config) {
@@ -63,9 +61,9 @@ export default function createWatcher(model, config) {
     if (reWsEndpoint.test(state.config.rpcUrl)) {
       log(`Connecting to WebSocket ${state.config.rpcUrl}...`);
       state.ws = new WebSocket(state.config.rpcUrl);
-      state.ws.on('open', () => {
+      state.ws.onopen = () => {
         log('WebSocket connected');
-        if (state.handler) throw new Error('Existing poll setTimeout handler set')
+        if (state.handler) throw new Error('Existing poll setTimeout handler set');
         if (state.watching) {
           poll.call({
             state,
@@ -73,23 +71,26 @@ export default function createWatcher(model, config) {
             resolveFetchPromise: state.initialFetchResolver
           });
         }
-      });
-      state.ws.on('close', err => {
-        log('WebSocket closed:', JSON.stringify(err));
+      };
+      state.ws.onclose = err => {
+        log('WebSocket closed: %s', JSON.stringify(err));
         log(`Reconnecting in ${state.config.wsReconnectTimeout / 1000} seconds.`);
         reconnectWebSocket(state.config.wsReconnectTimeout);
-      });
-      state.ws.on('error', err => {
-        log('WebSocket error:', err);
+      };
+      state.ws.onerror = err => {
+        log('WebSocket error: %s', JSON.stringify(err));
         log(`Reconnecting in ${state.config.wsReconnectTimeout / 1000} seconds.`);
         reconnectWebSocket(state.config.wsReconnectTimeout);
-      });
+      };
     }
   }
 
   function destroyWebSocket() {
-    log('destroyWebSocket()')
-    state.ws.removeAllListeners();
+    log('destroyWebSocket()');
+    state.ws.onopen = null;
+    state.ws.onclose = null;
+    state.ws.onerror = null;
+    state.ws.onmessage = null;
     state.ws.close();
   }
 
@@ -120,7 +121,7 @@ export default function createWatcher(model, config) {
 
   function poll() {
     const interval = this.interval !== undefined ? this.interval : this.state.config.interval;
-    log('poll() called - interval:', interval, this.retry ? ', retry: ' + this.retry : '');
+    log('poll() called, %s%s', 'interval: ' + interval, this.retry ? ', retry: ' + this.retry : '');
     this.state.handler = setTimeout(async () => {
       try {
         if (!this.state.handler) return;
@@ -139,25 +140,31 @@ export default function createWatcher(model, config) {
         const {
           results: { blockNumber, ...data },
           keyToArgMap
-        } = await aggregate(this.state.model, { ...this.state.config, ws: this.state.ws, id: this.state.latestPromiseId });
+        } = await aggregate(this.state.model, {
+          ...this.state.config,
+          ws: this.state.ws,
+          id: this.state.latestPromiseId
+        });
 
         if (this.state.cancelPromiseId === promiseId) return;
 
-        if (typeof this.resolveFetchPromise === 'function')
-          this.resolveFetchPromise();
+        if (typeof this.resolveFetchPromise === 'function') this.resolveFetchPromise();
 
-        if (
-          this.state.latestBlockNumber !== null &&
-          blockNumber < this.state.latestBlockNumber
-        ) {
+        if (this.state.latestBlockNumber !== null && blockNumber < this.state.latestBlockNumber) {
           // Retry if blockNumber is lower than latestBlockNumber
-          log(`Stale block returned, retrying in ${this.state.config.staleBlockRetryWait / 1000} seconds`);
-          poll.call({ state: this.state, interval: this.state.config.staleBlockRetryWait, retry: this.retry ? this.retry + 1 : 1 });
+          log(
+            `Stale block returned, retrying in ${this.state.config.staleBlockRetryWait /
+              1000} seconds`
+          );
+          poll.call({
+            state: this.state,
+            interval: this.state.config.staleBlockRetryWait,
+            retry: this.retry ? this.retry + 1 : 1
+          });
         } else {
           if (
             this.state.latestBlockNumber === null ||
-            (this.state.latestBlockNumber !== null &&
-              blockNumber > this.state.latestBlockNumber)
+            (this.state.latestBlockNumber !== null && blockNumber > this.state.latestBlockNumber)
           ) {
             this.state.latestBlockNumber = parseInt(blockNumber);
             state.onNewBlockListeners.forEach(({ listener }) =>
@@ -176,12 +183,16 @@ export default function createWatcher(model, config) {
           alertListeners(events);
           poll.call({ state: this.state });
         }
-      } catch(e) {
-        log('Error:', e.message);
+      } catch (e) {
+        log('Error: %s', e.message);
         if (!this.state.handler) return;
         // Retry on error
         log(`Error occured, retrying in ${this.state.config.errorRetryWait / 1000} seconds`);
-        poll.call({ state: this.state, interval: this.state.config.errorRetryWait, retry: this.retry ? this.retry + 1 : 1 });
+        poll.call({
+          state: this.state,
+          interval: this.state.config.errorRetryWait,
+          retry: this.retry ? this.retry + 1 : 1
+        });
       }
     }, interval);
   }
@@ -194,12 +205,12 @@ export default function createWatcher(model, config) {
       return this.poll();
     },
     poll() {
-      log('watcher.poll() called')
+      log('watcher.poll() called');
       let resolveFetchPromise;
       const fetchPromise = new Promise(resolve => {
         resolveFetchPromise = resolve;
       });
-      if (state.watching) {
+      if (state.watching && (!state.ws || state.ws.readyState === WebSocket.OPEN)) {
         clearTimeout(state.handler);
         state.handler = null;
         poll.call({ state, interval: 0, resolveFetchPromise });

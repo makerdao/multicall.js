@@ -6,13 +6,14 @@ const MKR_FISH = '0x2dfcedcb401557354d0cf174876ab17bfd6f4efd';
 const PRICE_FEED_ETH = '0xa5aA4e07F5255E14F02B385b1f04b35cC50bdb66';
 
 // Preset can be 'mainnet', 'kovan', 'rinkeby', 'goerli' or 'xdai'
-const config = { preset: 'kovan' };
+// const config = { preset: 'kovan' };
 
 // Alternatively the rpcUrl and multicallAddress can be specified manually
-// const config = {
-//   rpcUrl: 'https://kovan.infura.io',
-//   multicallAddress: '0x2cc8688c5f75e365aaeeb4ea8d6a480405a48d2a'
-// };
+const config = {
+  rpcUrl: 'wss://kovan.infura.io/ws/v3/58073b4a32df4105906c702f167b91d2',
+  multicallAddress: '0x2cc8688c5f75e365aaeeb4ea8d6a480405a48d2a',
+  interval: 1000
+};
 
 (async () => {
   const watcher = createWatcher(
@@ -53,60 +54,63 @@ const config = { preset: 'kovan' };
     console.log(`New block: ${blockNumber}`);
   });
 
-  watcher.start();
+  setTimeout(async () => {
+    watcher.start();
 
-  await watcher.awaitInitialFetch();
+    await watcher.awaitInitialFetch();
 
-  console.log('Initial fetch completed');
+    console.log('Initial fetch completed');
 
-  // Update the calls
-  setTimeout(() => {
-    console.log('Updating calls...');
-    const fetchWaiter = watcher.tap(calls => [
-      ...calls,
-      {
-        target: MKR_TOKEN,
-        call: ['balanceOf(address)(uint256)', MKR_FISH],
-        returns: [['BALANCE_OF_MKR_FISH', val => val / 10 ** 18]]
-      }
-    ]);
-    fetchWaiter.then(() => {
-      console.log('Initial fetch completed');
-    });
-  }, 5000);
-
-  // Recreate watcher (useful if network has changed)
-  setTimeout(() => {
-    console.log('Recreating with new calls and config...');
-    const fetchWaiter = watcher.recreate(
-      [
+    // Update the calls
+    setTimeout(() => {
+      console.log('Updating calls...');
+      const fetchWaiter = watcher.tap(calls => [
+        ...calls,
         {
           target: MKR_TOKEN,
-          call: ['balanceOf(address)(uint256)', MKR_WHALE],
-          returns: [['BALANCE_OF_MKR_WHALE', val => val / 10 ** 18]]
+          call: ['balanceOf(address)(uint256)', MKR_FISH],
+          returns: [['BALANCE_OF_MKR_FISH', val => val / 10 ** 18]]
         }
-      ],
-      config
-    );
-    fetchWaiter.then(() => {
-      console.log('Initial fetch completed');
-    });
-  }, 10000);
+      ]);
+      fetchWaiter.then(() => {
+        console.log('Initial fetch completed');
+      });
+    }, 1000);
+
+    // Recreate watcher (useful if network has changed)
+    setTimeout(() => {
+      console.log('Recreating with new calls and config...');
+      const fetchWaiter = watcher.recreate(
+        [
+          {
+            target: MKR_TOKEN,
+            call: ['balanceOf(address)(uint256)', MKR_WHALE],
+            returns: [['BALANCE_OF_MKR_WHALE', val => val / 10 ** 18]]
+          }
+        ],
+        config
+      );
+      fetchWaiter.then(() => {
+        console.log('Initial fetch completed');
+      });
+    }, 2000);
+
+  }, 1);
 
   // When subscribing to state updates, previously cached values will be returned immediately
-  setTimeout(() => {
-    console.log(
-      'Subscribing to updates much later (will immediately return cached values)'
-    );
-    watcher.subscribe(update => {
-      console.log(
-        `Update (2nd subscription): ${update.type} = ${update.value}`
-      );
-    });
-    watcher.onNewBlock(blockNumber => {
-      console.log(`New block (2nd subscription): ${blockNumber}`);
-    });
-  }, 15000);
+  // setTimeout(() => {
+  //   console.log(
+  //     'Subscribing to updates much later (will immediately return cached values)'
+  //   );
+  //   watcher.subscribe(update => {
+  //     console.log(
+  //       `Update (2nd subscription): ${update.type} = ${update.value}`
+  //     );
+  //   });
+  //   watcher.onNewBlock(blockNumber => {
+  //     console.log(`New block (2nd subscription): ${blockNumber}`);
+  //   });
+  // }, 15000);
 })();
 
 (async () => {

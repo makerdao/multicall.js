@@ -16,6 +16,7 @@ module.exports = [
       file: 'dist/build.esm.js',
       format: 'es'
     },
+    external: ['cross-fetch', 'debug', 'ethers', 'isomorphic-ws', 'lodash', 'ws'],
     plugins: [
       builtins(),
       babel({
@@ -23,7 +24,6 @@ module.exports = [
         exclude: 'node_modules/**'
       }),
       json(),
-      autoExternal(),
       cleanup(),
       resolve({
         browser: true
@@ -34,7 +34,7 @@ module.exports = [
         }
       }),
       bundleSize(),
-      // minify()
+      minify()
     ]
   },
   {
@@ -59,7 +59,7 @@ module.exports = [
         }
       }),
       bundleSize(),
-      // minify()
+      minify()
     ]
   },
   {

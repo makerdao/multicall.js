@@ -268,7 +268,7 @@ export default function createWatcher(model, config) {
           resolveFetchPromise: state.initialFetchResolver
         });
       }
-      return watcher;
+      return state.initialFetchPromise;
     },
     startWatch() {
       return this.start();

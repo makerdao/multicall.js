@@ -39,6 +39,7 @@
     "watch": "yarn clean && rollup -w -c",
     "example": "DEBUG=multicall node_modules/.bin/babel-node examples/es-example.js",
     "test": "jest --runInBand",
+    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
     "prepublishOnly": "yarn test && yarn build"
   },
   "dependencies": {

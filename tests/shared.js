@@ -55,3 +55,7 @@ export const mockedResults = [
       1
     )
 ];
+
+export function promiseWait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

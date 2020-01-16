@@ -306,6 +306,9 @@ export default function createWatcher(model, config) {
     },
     awaitInitialFetch() {
       return state.initialFetchPromise;
+    },
+    get schemas() {
+      return state.model;
     }
   };
 

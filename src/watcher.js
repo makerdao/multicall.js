@@ -36,14 +36,17 @@ export default function createWatcher(model, config) {
     keyToArgMap: {},
     latestPromiseId: 0,
     latestBlockNumber: null,
-    listeners: [],
-    onNewBlockListeners: [],
-    onPollListeners: [],
+    id: 0,
+    listeners: {
+      subscribe: [],
+      block: [],
+      poll: [],
+      error: []
+    },
     handler: null,
     wsReconnectHandler: null,
     watching: false,
     config: prepareConfig(config),
-    id: 0,
     ws: null
   };
 
@@ -109,12 +112,12 @@ export default function createWatcher(model, config) {
       }));
       batch ? listener(events) : events.forEach(listener);
     }
-    state.listeners.push({ listener, id, batch });
+    state.listeners.subscribe.push({ listener, id, batch });
   }
 
   function alertListeners(events) {
     if (!isEmpty(events))
-      state.listeners.forEach(({ listener, batch }) =>
+      state.listeners.subscribe.forEach(({ listener, batch }) =>
         batch ? listener(events) : events.forEach(listener)
       );
   }
@@ -129,7 +132,7 @@ export default function createWatcher(model, config) {
         this.state.latestPromiseId++;
         const promiseId = this.state.latestPromiseId;
 
-        state.onPollListeners.forEach(({ listener }) =>
+        state.listeners.poll.forEach(({ listener }) =>
           listener({
             id: promiseId,
             latestBlockNumber: this.state.latestBlockNumber,
@@ -167,7 +170,7 @@ export default function createWatcher(model, config) {
             (this.state.latestBlockNumber !== null && blockNumber > this.state.latestBlockNumber)
           ) {
             this.state.latestBlockNumber = parseInt(blockNumber);
-            state.onNewBlockListeners.forEach(({ listener }) =>
+            state.listeners.block.forEach(({ listener }) =>
               listener(this.state.latestBlockNumber)
             );
           }
@@ -183,8 +186,9 @@ export default function createWatcher(model, config) {
           alertListeners(events);
           poll.call({ state: this.state });
         }
-      } catch (e) {
-        log('Error: %s', e.message);
+      } catch (err) {
+        log('Error: %s', err.message);
+        state.listeners.error.forEach(({ listener }) => listener(err, this.state));
         if (!this.state.handler) return;
         // Retry on error
         log(`Error occured, retrying in ${this.state.config.errorRetryWait / 1000} seconds`);
@@ -223,26 +227,7 @@ export default function createWatcher(model, config) {
       subscribe(listener, id, false);
       return {
         unsub() {
-          state.listeners = state.listeners.filter(({ id: _id }) => _id !== id);
-        }
-      };
-    },
-    onNewBlock(listener) {
-      const id = state.id++;
-      state.latestBlockNumber && listener(state.latestBlockNumber);
-      state.onNewBlockListeners.push({ listener, id });
-      return {
-        unsub() {
-          state.onNewBlockListeners = state.onNewBlockListeners.filter(({ id: _id }) => _id !== id);
-        }
-      };
-    },
-    onPoll(listener) {
-      const id = state.id++;
-      state.onPollListeners.push({ listener, id });
-      return {
-        unsub() {
-          state.onPollListeners = state.onPollListeners.filter(({ id: _id }) => _id !== id);
+          state.listeners.subscribe = state.listeners.subscribe.filter(({ id: _id }) => _id !== id);
         }
       };
     },
@@ -253,13 +238,42 @@ export default function createWatcher(model, config) {
           subscribe(listener, id, true);
           return {
             unsub() {
-              state.listeners = state.listeners.filter(({ id: _id }) => _id !== id);
+              state.listeners.subscribe = state.listeners.subscribe.filter(({ id: _id }) => _id !== id);
             }
           };
         }
       };
     },
+    onNewBlock(listener) {
+      const id = state.id++;
+      state.latestBlockNumber && listener(state.latestBlockNumber);
+      state.listeners.block.push({ listener, id });
+      return {
+        unsub() {
+          state.listeners.block = state.listeners.block.filter(({ id: _id }) => _id !== id);
+        }
+      };
+    },
+    onPoll(listener) {
+      const id = state.id++;
+      state.listeners.poll.push({ listener, id });
+      return {
+        unsub() {
+          state.listeners.poll = state.listeners.poll.filter(({ id: _id }) => _id !== id);
+        }
+      };
+    },
+    onError(listener) {
+      const id = state.id++;
+      state.listeners.error.push({ listener, id });
+      return {
+        unsub() {
+          state.listeners.error = state.listeners.error.filter(({ id: _id }) => _id !== id);
+        }
+      };
+    },
     start() {
+      log('watcher.start() called');
       state.watching = true;
       if (!state.ws || state.ws.readyState === WebSocket.OPEN) {
         poll.call({
@@ -271,6 +285,7 @@ export default function createWatcher(model, config) {
       return state.initialFetchPromise;
     },
     stop() {
+      log('watcher.recreate() called');
       clearTimeout(state.handler);
       state.handler = null;
       clearTimeout(state.wsReconnectHandler);
@@ -278,6 +293,7 @@ export default function createWatcher(model, config) {
       state.watching = false;
     },
     recreate(model, config) {
+      log('watcher.recreate() called');
       clearTimeout(state.handler);
       state.handler = null;
       clearTimeout(state.wsReconnectHandler);

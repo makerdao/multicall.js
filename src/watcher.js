@@ -270,9 +270,6 @@ export default function createWatcher(model, config) {
       }
       return state.initialFetchPromise;
     },
-    startWatch() {
-      return this.start();
-    },
     stop() {
       clearTimeout(state.handler);
       state.handler = null;

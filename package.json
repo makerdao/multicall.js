@@ -34,7 +34,7 @@
     "package.json"
   ],
   "scripts": {
-    "clean": "rm -rf dist",
+    "clean": "rimraf dist",
     "build": "yarn clean && rollup -c",
     "watch": "yarn clean && rollup -w -c",
     "example": "DEBUG=multicall node_modules/.bin/babel-node examples/es-example.js",
@@ -66,6 +66,7 @@
     "jest-fetch-mock": "^2.1.2",
     "jest-websocket-mock": "^2.0.0",
     "mock-socket": "^9.0.2",
+    "rimraf": "^3.0.0",
     "rollup": "^0.66.6",
     "rollup-plugin-auto-external": "^2.0.0",
     "rollup-plugin-babel": "^4.3.2",

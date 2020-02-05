@@ -66,6 +66,36 @@ export default [
     ]
   },
 
+  // ESM for Browsers
+  {
+    input: 'src/index.js',
+    output: { file: 'dist/multicall.esm.mjs', format: 'es', indent: false, sourcemap: true },
+    plugins: [
+      json(),
+      nodeResolve({
+        extensions,
+        browser: true
+      }),
+      commonjs(),
+      replace({
+        'process.env.NODE_ENV': JSON.stringify('production')
+      }),
+      babel({
+        extensions,
+        exclude: 'node_modules/**'
+      }),
+      terser({
+        compress: {
+          pure_getters: true,
+          unsafe: true,
+          unsafe_comps: true,
+          warnings: false
+        }
+      }),
+      bundleSize()
+    ]
+  },
+
   // UMD
   {
     input: 'src/index.js',

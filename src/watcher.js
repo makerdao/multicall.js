@@ -285,7 +285,7 @@ export default function createWatcher(model, config) {
       return state.initialFetchPromise;
     },
     stop() {
-      log('watcher.recreate() called');
+      log('watcher.stop() called');
       clearTimeout(state.handler);
       state.handler = null;
       clearTimeout(state.wsReconnectHandler);

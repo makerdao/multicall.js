@@ -1,14 +1,8 @@
-import { keccak256 } from 'js-sha3';
+import { id as keccak256 } from 'ethers/utils/hash';
 import invariant from 'invariant';
-import {
-  strip0x,
-  ethCall,
-  encodeParameters,
-  decodeParameters
-} from './helpers.js';
+import { strip0x, ethCall, encodeParameters, decodeParameters } from './helpers.js';
 import memoize from 'lodash/memoize';
 
-// regex -----------------------------------
 const INSIDE_EVERY_PARENTHESES = /\(.*?\)/g;
 const FIRST_CLOSING_PARENTHESES = /^[^)]*\)/;
 
@@ -16,8 +10,7 @@ export function _makeMulticallData(calls) {
   const values = [
     calls.map(({ target, method, args, returnTypes }) => [
       target,
-      '0x' +
-        keccak256(method).substr(0, 8) +
+      keccak256(method).substr(0, 10) +
         (args && args.length > 0
           ? strip0x(encodeParameters(args.map(a => a[1]), args.map(a => a[0])))
           : '')
@@ -36,9 +29,7 @@ export function _makeMulticallData(calls) {
   return calldata;
 }
 
-const makeMulticallData = memoize(_makeMulticallData, (...args) =>
-  JSON.stringify(args)
-);
+const makeMulticallData = memoize(_makeMulticallData, (...args) => JSON.stringify(args));
 
 export default async function aggregate(calls, config) {
   calls = Array.isArray(calls) ? calls : [calls];
@@ -93,10 +84,7 @@ export default async function aggregate(calls, config) {
     'Missing data needed to parse results'
   );
 
-  const outerResultsDecoded = decodeParameters(
-    ['uint256', 'bytes[]'],
-    outerResults
-  );
+  const outerResultsDecoded = decodeParameters(['uint256', 'bytes[]'], outerResults);
   const blockNumber = outerResultsDecoded.shift();
   const parsedVals = outerResultsDecoded.reduce((acc, r) => {
     r.forEach((results, idx) => {
@@ -116,8 +104,7 @@ export default async function aggregate(calls, config) {
 
   for (let i = 0; i < parsedVals.length; i++) {
     const [name, transform] = returnDataMeta[i];
-    retObj[name] =
-      transform !== undefined ? transform(parsedVals[i]) : parsedVals[i];
+    retObj[name] = transform !== undefined ? transform(parsedVals[i]) : parsedVals[i];
   }
 
   return { results: retObj, keyToArgMap };

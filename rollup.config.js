@@ -82,11 +82,7 @@ export default [
         extensions,
         browser: true
       }),
-      commonjs({
-        namedExports: {
-          'node_modules/js-sha3/src/sha3.js': ['keccak256']
-        }
-      }),
+      commonjs(),
       babel({
         extensions,
         exclude: 'node_modules/**'

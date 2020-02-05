@@ -1,4 +1,4 @@
-import 'cross-fetch/polyfill';
+import fetch from 'cross-fetch';
 import { defaultAbiCoder } from 'ethers/utils/abi-coder';
 import debug from 'debug';
 const log = debug('multicall');

@@ -22,6 +22,16 @@ export const calls = [
     target: MOCK_ADDRESS,
     call: ['peek()(uint256,bool)'],
     returns: [['PRICE_FEED_ETH_PRICE', fromWei], ['PRICE_FEED_ETH_SET']]
+  },
+  {
+    target: MOCK_ADDRESS,
+    call: ['balanceOf(address)(uint256)', MOCK_ADDRESS],
+    returns: [
+      ['TRANSFORM_RESULT_TO_NULL', v => {
+        if (fromWei(v) === '2222.33334444') return null;
+        if (fromWei(v) === '4444.55556666') return BigNumber(1);
+      }]
+    ]
   }
 ];
 
@@ -36,7 +46,7 @@ export const mockedResults = [
       32,
       toWei('1111.22223333'),
       32,
-      toWei('4444.55556666')
+      toWei('2222.33334444')
     ),
   '0x' +
     toWords(
@@ -47,7 +57,7 @@ export const mockedResults = [
       160,
       224,
       32,
-      toWei('1111.22223333'),
+      toWei('3333.44445555'),
       32,
       toWei('4444.55556666'),
       64,

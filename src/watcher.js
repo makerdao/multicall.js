@@ -8,7 +8,17 @@ const log = debug('multicall');
 const reWsEndpoint = /^wss?:\/\//i;
 
 function isNewState(type, value, store) {
-  return store[type] === undefined || store[type].toString() !== value.toString();
+  return (
+    store[type] === undefined ||
+    (value !== null &&
+    store[type] !== null &&
+    typeof value === 'object' &&
+    typeof value.toString === 'function' &&
+    typeof store[type] === 'object' &&
+    typeof store[type].toString === 'function'
+      ? value.toString() !== store[type].toString()
+      : value !== store[type])
+  );
 }
 
 function prepareConfig(config) {

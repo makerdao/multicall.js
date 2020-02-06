@@ -27,11 +27,13 @@ describe('websocket', () => {
     await watcher.start();
 
     expect(results['BALANCE_OF_ETH_WHALE']).toEqual('1111.22223333');
-    expect(results['BALANCE_OF_MKR_WHALE']).toEqual('4444.55556666');
+    expect(results['BALANCE_OF_MKR_WHALE']).toEqual('2222.33334444');
     expect(results['BLOCK_NUMBER']).toEqual(123456789);
 
     await watcher.tap(existing => [...existing, calls[2]]);
 
+    expect(results['BALANCE_OF_ETH_WHALE']).toEqual('3333.44445555');
+    expect(results['BALANCE_OF_MKR_WHALE']).toEqual('4444.55556666');
     expect(results['PRICE_FEED_ETH_PRICE']).toEqual('1234.56789');
     expect(results['BLOCK_NUMBER']).toEqual(987654321);
   });

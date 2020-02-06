@@ -22,7 +22,6 @@
   },
   "main": "dist/multicall.cjs.js",
   "module": "dist/multicall.esm.js",
-  "browser": "dist/multicall.umd.js",
   "unpkg": "dist/multicall.umd.js",
   "files": [
     "dist",

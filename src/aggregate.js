@@ -100,11 +100,12 @@ export default async function aggregate(calls, config) {
     return acc;
   }, []);
 
-  const retObj = { blockNumber };
+  const retObj = { blockNumber, original: {}, transformed: {} };
 
   for (let i = 0; i < parsedVals.length; i++) {
     const [name, transform] = returnDataMeta[i];
-    retObj[name] = transform !== undefined ? transform(parsedVals[i]) : parsedVals[i];
+    retObj.original[name] = parsedVals[i];
+    retObj.transformed[name] = transform !== undefined ? transform(parsedVals[i]) : parsedVals[i];
   }
 
   return { results: retObj, keyToArgMap };

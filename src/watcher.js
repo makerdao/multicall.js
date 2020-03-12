@@ -43,6 +43,7 @@ export default function createWatcher(model, config) {
   const state = {
     model: [...model],
     store: {},
+    storeTransformed: {},
     keyToArgMap: {},
     latestPromiseId: 0,
     latestBlockNumber: null,
@@ -114,8 +115,8 @@ export default function createWatcher(model, config) {
   });
 
   function subscribe(listener, id, batch = false) {
-    if (!isEmpty(state.store)) {
-      const events = Object.entries(state.store).map(([type, value]) => ({
+    if (!isEmpty(state.storeTransformed)) {
+      const events = Object.entries(state.storeTransformed).map(([type, value]) => ({
         type,
         value,
         args: state.keyToArgMap[type] || []
@@ -151,7 +152,11 @@ export default function createWatcher(model, config) {
         );
 
         const {
-          results: { blockNumber, ...data },
+          results: {
+            blockNumber,
+            original: { ...data },
+            transformed: { ...dataTransformed }
+          },
           keyToArgMap
         } = await aggregate(this.state.model, {
           ...this.state.config,
@@ -180,18 +185,17 @@ export default function createWatcher(model, config) {
             (this.state.latestBlockNumber !== null && blockNumber > this.state.latestBlockNumber)
           ) {
             this.state.latestBlockNumber = parseInt(blockNumber);
-            state.listeners.block.forEach(({ listener }) =>
-              listener(this.state.latestBlockNumber)
-            );
+            state.listeners.block.forEach(({ listener }) => listener(this.state.latestBlockNumber));
           }
           const events = Object.entries(data)
             .filter(([type, value]) => isNewState(type, value, this.state.store))
-            .map(([type, value]) => ({
+            .map(([type]) => ({
               type,
-              value,
+              value: dataTransformed[type],
               args: keyToArgMap[type] || []
             }));
           this.state.store = { ...data };
+          this.state.storeTransformed = { ...dataTransformed };
           this.state.keyToArgMap = { ...keyToArgMap };
           alertListeners(events);
           poll.call({ state: this.state });
@@ -313,6 +317,7 @@ export default function createWatcher(model, config) {
       state.config = prepareConfig(config);
       state.model = [...model];
       state.store = {};
+      state.storeTransformed = {};
       state.latestBlockNumber = null;
       state.cancelPromiseId = state.latestPromiseId;
       setupWebSocket();

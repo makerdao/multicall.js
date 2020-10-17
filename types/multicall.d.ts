@@ -48,15 +48,15 @@ declare module '@makerdao/multicall' {
   }
 
   export interface IBatchWatcher {
-    updates(callback: (updates: IUpdate[]) => undefined): undefined;
+    updates(callback: (updates: IUpdate[]) => void): undefined;
   }
 
   export interface IWatcher {
-    subscribe(callback: (update: IUpdate) => undefined): undefined;
+    subscribe(callback: (update: IUpdate) => void): undefined;
 
     batch(): IBatchWatcher;
 
-    onNewBlock(callback: (blockNumber: number) => undefined): undefined;
+    onNewBlock(callback: (blockNumber: number) => void): undefined;
 
     tap(callback: (calls: Partial<ICall>[]) => Partial<ICall>[]): Promise<undefined>;
 

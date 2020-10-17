@@ -47,22 +47,67 @@ declare module '@makerdao/multicall' {
     args: any[];
   }
 
-  export interface IBatchWatcher {
-    updates(callback: (updates: IUpdate[]) => void): undefined;
+  export interface ISubscription {
+    unsub(): void;
+  }
+
+  export interface ISubscriber {
+    subscribe(callback: (updates: IUpdate[]) => void): ISubscription;
+  }
+
+  export interface IPollData {
+    id: number;
+    latestBlockNumber: number;
+    retry?: number;
+  }
+
+  export interface IState {
+    model: Partial<ICall>[];
+    store: IKeysValues;
+    storeTransformed: IKeysValues;
+    keyToArgMap: IKeysValues;
+    latestPromiseId: number;
+    latestBlockNumber: number | null;
+    id: number;
+    listeners: {
+      subscribe: any[];
+      block: any[];
+      poll: any[];
+      error: any[];
+    };
+    handler: any | null;
+    wsReconnectHandler: any | null;
+    watching: boolean;
+    config: Partial<IConfig>;
+    ws: WebSocket | null;
   }
 
   export interface IWatcher {
-    subscribe(callback: (update: IUpdate) => void): undefined;
+    initialFetch: Promise;
 
-    batch(): IBatchWatcher;
-
-    onNewBlock(callback: (blockNumber: number) => void): undefined;
+    schemas: Partial<ICall>[];
 
     tap(callback: (calls: Partial<ICall>[]) => Partial<ICall>[]): Promise<undefined>;
 
-    recreate(calls: Partial<ICall>[], config: Partial<IConfig>): IWatcher;
+    poll(): Promise<void>;
 
-    start(): undefined;
+    subscribe(callback: (update: IUpdate) => void): ISubscriber;
+
+    batch(): ISubscriber;
+
+    onNewBlock(callback: (blockNumber: number) => void): ISubscription;
+
+    onPoll(callback: (pollData: IPollData) => void): ISubscription;
+
+    onError(callback: (error: Error, state: IState) => void): ISubscription;
+
+    recreate(calls: Partial<ICall>[], config: Partial<IConfig>): Promise<undefined>;
+
+    start(): Promise<undefined>;
+
+    stop(): undefined;
+
+    awaitInitialFetch(): Promise<undefined>;
   }
 
   export function aggregate(calls: Partial<ICall>[], config: Partial<IConfig>): Promise<IResponse>;

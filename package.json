@@ -21,6 +21,7 @@
     "url": "https://github.com/makerdao/multicall.js.git"
   },
   "main": "dist/multicall.cjs.js",
+  "types": "types/multicall.d.ts",
   "module": "dist/multicall.esm.js",
   "unpkg": "dist/multicall.umd.js",
   "files": [

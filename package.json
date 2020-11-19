@@ -1,6 +1,6 @@
 {
   "name": "@makerdao/multicall",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "A blockchain state management library for dapps.",
   "contributors": [
     "Michael Elliot <mike@makerdao.com>",

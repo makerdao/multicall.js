@@ -81,7 +81,9 @@ export async function ethCall(rawData, { id, web3, rpcUrl, block, multicallAddre
         log('Got WebSocket response id #%d', json.id);
         clearTimeout(timeoutHandle);
         ws.onmessage = null;
-        resolve(json.result);
+        if (json.result) return resolve(json.result);
+        if (json.error) return reject(new Error(json.error.message));
+        reject(new Error(`WebSocket response with empty result`));
       }
       const timeoutHandle = setTimeout(() => {
         if (ws.onmessage !== onMessage) return;

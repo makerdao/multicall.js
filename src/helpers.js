@@ -76,7 +76,12 @@ export async function ethCall(rawData, { id, web3, rpcUrl, block, multicallAddre
       }));
       function onMessage(data) {
         if (typeof data !== 'string') data = data.data;
-        const json = JSON.parse(data);
+        try {
+          var json = JSON.parse(data);
+        } catch (e) {
+          log('Unexpected WebSocket response %s', data);
+          return;
+        } 
         if (!json.id || json.id !== id) return;
         log('Got WebSocket response id #%d', json.id);
         clearTimeout(timeoutHandle);

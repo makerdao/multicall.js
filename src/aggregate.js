@@ -88,6 +88,10 @@ export default async function aggregate(calls, config) {
   const blockNumber = outerResultsDecoded.shift();
   const parsedVals = outerResultsDecoded.reduce((acc, r) => {
     r.forEach((results, idx) => {
+      if (results === '0x') {
+        acc.push(null);
+        return;
+      }
       const types = calls[idx].returnTypes;
       const resultsDecoded = decodeParameters(types, results);
       acc.push(

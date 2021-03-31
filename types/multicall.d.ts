@@ -1,6 +1,7 @@
 /// <reference types="node"/>
 
 import { BigNumber } from 'bignumber.js';
+import WebSocket from 'ws';
 
 export interface IConfig {
   preset: 'mainnet' | 'kovan' | 'rinkeby' | 'goerli' | 'xdai' | 'ropsten';

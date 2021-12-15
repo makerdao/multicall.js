@@ -65,6 +65,7 @@ export async function ethCall(rawData, { id, web3, ethers, rpcUrl, block, chain,
       ws.send(JSON.stringify({
         jsonrpc: '2.0',
         method: 'eth_call',
+        chain,
         params: [
           {
             to: multicallAddress,
@@ -123,6 +124,7 @@ export async function ethCall(rawData, { id, web3, ethers, rpcUrl, block, chain,
       body: JSON.stringify({
         jsonrpc: '2.0',
         method: 'eth_call',
+        chain,
         params: [
           {
             to: multicallAddress,

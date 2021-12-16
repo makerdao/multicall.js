@@ -33,9 +33,9 @@ async function ethCall(rawData, _ref) {
   var id = _ref.id,
       web3 = _ref.web3,
       ethers = _ref.ethers,
+      provider = _ref.provider,
       rpcUrl = _ref.rpcUrl,
       block = _ref.block,
-      chain = _ref.chain,
       multicallAddress = _ref.multicallAddress,
       ws = _ref.ws,
       wsResponseTimeout = _ref.wsResponseTimeout;
@@ -47,7 +47,6 @@ async function ethCall(rawData, _ref) {
       ws.send(JSON.stringify({
         jsonrpc: '2.0',
         method: 'eth_call',
-        chain: chain,
         params: [{
           to: multicallAddress,
           data: abiEncodedData
@@ -76,7 +75,15 @@ async function ethCall(rawData, _ref) {
     log('Sending via ethers provider');
     return ethers.send({
       method: 'eth_call',
-      chain: chain,
+      params: [{
+        to: multicallAddress,
+        data: abiEncodedData
+      }, block || 'latest']
+    });
+  } else if (provider) {
+    log('Sending via EIP-1193 provider');
+    return provider.request({
+      method: 'eth_call',
       params: [{
         to: multicallAddress,
         data: abiEncodedData
@@ -99,7 +106,6 @@ async function ethCall(rawData, _ref) {
       body: JSON.stringify({
         jsonrpc: '2.0',
         method: 'eth_call',
-        chain: chain,
         params: [{
           to: multicallAddress,
           data: abiEncodedData

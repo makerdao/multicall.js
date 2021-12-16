@@ -57,7 +57,7 @@ export function isEmpty(obj) {
   return !obj || Object.keys(obj).length === 0;
 }
 
-export async function ethCall(rawData, { id, web3, ethers, rpcUrl, block, chain, multicallAddress, ws, wsResponseTimeout }) {
+export async function ethCall(rawData, { id, web3, ethers, provider, rpcUrl, block, multicallAddress, ws, wsResponseTimeout }) {
   const abiEncodedData = AGGREGATE_SELECTOR + strip0x(rawData);
   if (ws) {
     log('Sending via WebSocket');
@@ -65,7 +65,6 @@ export async function ethCall(rawData, { id, web3, ethers, rpcUrl, block, chain,
       ws.send(JSON.stringify({
         jsonrpc: '2.0',
         method: 'eth_call',
-        chain,
         params: [
           {
             to: multicallAddress,
@@ -97,7 +96,19 @@ export async function ethCall(rawData, { id, web3, ethers, rpcUrl, block, chain,
     log('Sending via ethers provider');
     return ethers.send({
       method: 'eth_call',
-      chain,
+      params: [
+        {
+          to: multicallAddress,
+          data: abiEncodedData
+        },
+        block || 'latest'
+      ]
+    })
+  }
+  else if (provider) {
+    log('Sending via EIP-1193 provider');
+    return provider.request({
+      method: 'eth_call',
       params: [
         {
           to: multicallAddress,
@@ -124,7 +135,6 @@ export async function ethCall(rawData, { id, web3, ethers, rpcUrl, block, chain,
       body: JSON.stringify({
         jsonrpc: '2.0',
         method: 'eth_call',
-        chain,
         params: [
           {
             to: multicallAddress,
